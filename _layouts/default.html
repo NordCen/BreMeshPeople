@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% assign t = page.title | to_s | strip %}{% if t != "" %}{{ t }} – {% endif %}{{ site.title }}</title>
+  <meta name="description" content="{{ site.description }}" />
+  <link rel="stylesheet" href="/assets/css/style.css" />
+  <link rel="icon" href="/assets/img/favicon.ico" sizes="any">
+  <meta property="og:title" content="{{ site.title }}">
+  <meta property="og:description" content="{{ site.description }}">
+  <meta property="og:image" content="/assets/img/hero.png">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="/" aria-label="BreMesh Startseite">
+        <img src="/assets/img/logo.png" alt="BreMesh Logo" class="logo" />
+        <span class="brand-text">BreMesh</span>
+      </a>
+
+      <nav class="nav">
+        <a href="/moin/" class="{% if page.url == '/moin/' %}active{% endif %}">Schnellstart</a>
+        <a href="/umstieg/" class="{% if page.url == '/umstieg/' %}active{% endif %}">Umstieg</a>
+        <a href="/community/" class="{% if page.url == '/community/' %}active{% endif %}">Community</a>
+      </nav>
+    </div>
+  </header>
+
+  {% if page.hero %}
+  <section class="hero" aria-hidden="true">
+    <div class="hero-inner">
+      <div class="hero-title">{{ page.hero }}</div>
+    </div>
+  </section>
+  {% endif %}
+
+  <main class="content">
+    {{ content }}
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <a href="/impressum/">Impressum</a>
+      <span class="sep">·</span>
+      <a href="/datenschutz/">Datenschutz</a>
+    </div>
+  </footer>
+</body>
+</html>
