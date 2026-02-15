@@ -159,6 +159,10 @@ hr{
 .post-meta{ color: var(--muted); font-size: .9rem; }
 .news-item{ margin-bottom: 1rem; }
 
+/* Footer */
+.footer-meta{ text-align: center; font-size: .8rem; color: var(--muted); margin-top: .5rem; }
+.footer-meta a{ color: var(--muted); text-decoration: underline; }
+
 @media (max-width: 860px){
   .columns{ grid-template-columns: 1fr; }
   .header-inner{ flex-direction: column; align-items: flex-start; }
