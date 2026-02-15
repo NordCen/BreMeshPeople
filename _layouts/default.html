@@ -28,10 +28,11 @@
     </div>
   </header>
 
-  {% if page.hero %}
+  {% assign hero_text = page.hero | default: page.title %}
+  {% if hero_text and hero_text != "" %}
   <section class="hero" aria-hidden="true">
     <div class="hero-inner">
-      <div class="hero-title">{{ page.hero }}</div>
+      <div class="hero-title">{{ hero_text }}</div>
     </div>
   </section>
   {% endif %}

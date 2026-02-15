@@ -82,7 +82,8 @@ a:hover{ opacity: .85; }
   margin: 0 auto;
   padding: 64px 18px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+  text-align: center;
 }
 @media (max-width: 600px){
   .hero-inner{

@@ -38,8 +38,8 @@ Du brauchst:
 - eine 868-MHz-Antenne
 - etwas Platz mit halbwegs freier Sicht
 
-**Zum Einstieg empfehlen wir den Schnellstart.**  
-Meshtastic-Nutzer:innen finden eine eigene **Umstiegsseite**.
+**Zum Einstieg empfehlen wir den [Schnellstart](/moin/).**  
+Meshtastic-Nutzer:innen finden eine eigene **[Umstiegsseite](/umstieg/)**.
 
 </div>
 
