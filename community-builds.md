@@ -15,7 +15,7 @@ Neben dem offiziellen MeshCore-Projekt entstehen in der Bremer Mesh-Community ei
 
 ### RePeter Firmware
 
-Ein Fork der offiziellen MeshCore-Firmware, speziell angepasst für die RePeter-Hardware und das BreMesh-Netz. Enthält vorkonfigurierte Frequenzen für die 868-MHz-Region, aktiviertes powersaving für esp32 und nRF Boards, ein eigenes Boot-Logo und fertige Release-Binaries über GitHub Actions, sodass kein eigenes Kompilieren nötig ist. Unterstützt neben dem RePeter auch weitere Boards wie MeshTiny und T114.
+Ein Fork der offiziellen MeshCore-Firmware, speziell angepasst für die RePeter-Hardware und das BreMesh-Netz. Enthält vorkonfigurierte Frequenzen für die 868-MHz-Region, aktiviertes powersaving, ein eigenes Boot-Logo und fertige Release-Binaries über GitHub Actions, sodass kein eigenes Kompilieren nötig ist. Unterstützt ProMicro nRF52840 Boards.
 
 - **Projekt:** [RePeter-Firmware](https://github.com/timniklas/RePeter-Firmware)
 - **Typ:** Firmware (MeshCore-Fork)
