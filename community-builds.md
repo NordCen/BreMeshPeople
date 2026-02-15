@@ -49,6 +49,21 @@ Ein offenes Hardware-Design für einen kompakten MeshCore-Repeater auf Basis des
 <hr>
 
 
+## Infrastruktur
+
+### Matrix-Server
+
+Die BreMesh-Community betreibt unter [mtrx.hbme.sh](https://mtrx.hbme.sh/) einen eigenen **Matrix-Server**. Matrix ist ein offenes, dezentrales Kommunikationsprotokoll – vergleichbar mit E-Mail, aber für Echtzeit-Chats. Nachrichten werden **Ende-zu-Ende verschlüsselt**, und da Matrix föderiert funktioniert, kann man mit Nutzern auf anderen Matrix-Servern kommunizieren, ohne an einen einzelnen Anbieter gebunden zu sein.
+
+Die Registrierung eines Benutzerkontos ist **Invite-only** und für Mitglieder der lokalen Community gedacht. Eine gute Möglichkeit, die Community kennenzulernen: Komm zum **MeshMittwoch-Stammtisch**, beteilige dich über die [Telegram-Gruppe](https://t.me/meshhbuz) oder melde dich direkt im Mesh.
+
+- **Server:** [mtrx.hbme.sh](https://mtrx.hbme.sh/)
+- **Zugang:** Nur auf Einladung
+- **Administriert von:** bjo & Bartzi
+
+<hr>
+
+
 
 ## Eigenes Projekt beitragen?
 
