@@ -49,10 +49,14 @@ Meshtastic-Nutzer:innen finden eine eigene **[Umstiegsseite](/umstieg/)**.
 
 Das Bremer Mesh lebt vom Austausch:
 
-- Mesh-Karte: [https://app.bremesh.de](https://bremesh.de)
-- Öffentlicher Chat im Mesh: `Public`
-- Matrix-Server: [https://mtrx.hbme.sh](https://mtrx.hbme.sh) - Soon!
-- Telegram-Gruppe: [https://t.me/meshhbuz](https://t.me/meshhbuz)
+- Öffentlicher Chat im Mesh: 
+  - `Public`
+  - `#bremesh`
+- Matrix-Server:
+  - [mtrx.hbme.sh](https://mtrx.hbme.sh)
+- Telegram-Gruppen: 
+  - [Meshtastic Bremen und Umzu](https://t.me/meshhbuz)
+  - [MeshCore Deutschland](https://t.me/meshcorede)
 
 </div>
 
