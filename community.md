@@ -20,11 +20,9 @@ Unsere Community baut eigene Hardware, Firmware und Apps rund um MeshCore:
 
 - **[RePeter](https://github.com/robrec/MeshCoreRepeater-RePeter)** – Community-Repeater-Design von Bartzi
 - **[RePeter Firmware](https://github.com/timniklas/RePeter-Firmware)** – Eigene Firmware für den RePeter von Nagios
-- **BreMesh App** (iOS & Android) – Companion-App von Nagios
+- **[BreMesh App]** (iOS & Android) – Companion-App von Nagios
 
 → [Alle Community Builds im Überblick](/community-builds/)  
-→ [bremesh.de](https://bremesh.de) – Unsere Website
-
 <hr>
 
 ## Sicherheit & Respekt
