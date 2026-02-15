@@ -51,7 +51,9 @@ Das Bremer Mesh lebt vom Austausch:
 
 - Mesh-Karte: [https://app.bremesh.de](https://app.bremesh.de)
 - Öffentlicher Chat im Mesh: `Public`
+- Matrix-Server: soon
 - Telegram-Gruppe: [https://t.me/meshhbuz](https://t.me/meshhbuz)
+
 
 </div>
 
