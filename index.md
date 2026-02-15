@@ -65,6 +65,8 @@ Das Bremer Mesh lebt vom Austausch:
 
 {% for post in site.posts limit:3 %}
 **{{ post.date | date: "%d.%m.%Y" }}** – [{{ post.title }}]({{ post.url }})  
+{{ post.excerpt | strip_html | truncatewords: 20 }}
+
 {% endfor %}
 
 → [Alle News anzeigen](/news/)
