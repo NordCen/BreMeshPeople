@@ -155,6 +155,10 @@ hr{
 .footer-inner a:hover{ text-decoration: underline; }
 .sep{ opacity: .6; }
 
+/* News / Posts */
+.post-meta{ color: var(--muted); font-size: .9rem; }
+.news-item{ margin-bottom: 1rem; }
+
 @media (max-width: 860px){
   .columns{ grid-template-columns: 1fr; }
   .header-inner{ flex-direction: column; align-items: flex-start; }

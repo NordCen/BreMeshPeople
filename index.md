@@ -54,7 +54,20 @@ Das Bremer Mesh lebt vom Austausch:
 - Matrix-Server: [https://mtrx.hbme.sh](https://mtrx.hbme.sh) - Soon!
 - Telegram-Gruppe: [https://t.me/meshhbuz](https://t.me/meshhbuz)
 
-
 </div>
 
 </div>
+
+{% if site.posts.size > 0 %}
+<div class="center" markdown="1">
+
+## Neuigkeiten
+
+{% for post in site.posts limit:3 %}
+**{{ post.date | date: "%d.%m.%Y" }}** – [{{ post.title }}]({{ post.url }})  
+{% endfor %}
+
+→ [Alle News anzeigen](/news/)
+
+</div>
+{% endif %}
