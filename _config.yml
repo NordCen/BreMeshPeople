@@ -4,3 +4,6 @@ markdown: kramdown
 kramdown:
   input: GFM
 permalink: pretty
+
+include:
+  - .well-known
