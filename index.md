@@ -52,8 +52,8 @@ Das Bremer Mesh lebt vom Austausch:
 - Öffentlicher Chat im Mesh: 
   - `Public`
   - `#bremesh`
-- Matrix-Server:
-  - [mtrx.hbme.sh](https://mtrx.hbme.sh)
+- Matrix-Channel:
+  - [#meshcore-bremen:hbme.sh](https://matrix.to/#/%23meshcore-bremen:hbme.sh)
 - Telegram-Gruppen: 
   - [Meshtastic Bremen und Umzu](https://t.me/meshhbuz)
   - [MeshCore Deutschland](https://t.me/meshcorede)
