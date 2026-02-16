@@ -24,7 +24,8 @@ vom einzelnen Node auf dem Balkon bis zum fest installierten Repeater an einem g
 ### Was ist MeshCore?
 
 MeshCore ist eine moderne, schlanke Mesh-Firmware für LoRa-Geräte.  
-Sie trennt klar zwischen **Client-Geräten (Companion)** und **reinen Weiterleitungs-Knoten (Repeater)** und sorgt so für weniger Airtime und bessere Netzqualität.
+Sie trennt klar zwischen **Client-Geräten (Companion)**, **Weiterleitungs-Knoten (Repeater)** und **Room Servern** für Gruppenchats – und sorgt so für weniger Airtime und bessere Netzqualität.  
+Dazu kommen Features wie **Power Saving** für tagelangen Akkubetrieb, ein **Off-Grid-Modus**, in dem der Companion selbst als Repeater fungiert, und **OTA-Updates** per Bluetooth.
 
 </div>
 
