@@ -10,6 +10,20 @@ Neben dem offiziellen MeshCore-Projekt entstehen in der Bremer Mesh-Community ei
 
 <hr>
 
+## Website
+
+### hbme.sh – BreMesh Community-Seite
+
+Diese Website! Eine statische **GitHub Pages**-Seite mit allen Infos rund um das BreMesh-Netz – Schnellstart, Hardware-Anleitungen, Community Builds und News.  
+Open Source und offen für Beiträge: Jeder kann per Pull Request Inhalte ergänzen oder verbessern.
+
+- **Website:** [hbme.sh](https://hbme.sh)
+- **Repository:** [github.com/NordCen/BreMeshPeople](https://github.com/NordCen/BreMeshPeople)
+- **Typ:** Website (Jekyll / GitHub Pages)
+- **Betrieben von:** NordCen
+
+<hr>
+
 
 ## Firmware
 
@@ -76,21 +90,5 @@ Unser Server ist **Invite-only**. Da Matrix aber föderiert funktioniert, kannst
 
 <hr>
 
-
-
-## Eigenes Projekt beitragen?
-
-Du hast selbst etwas gebaut – Firmware, Hardware, 3D-Modelle, Software oder ein anderes Tool?  
-Trage es einfach selbst ein – diese Seite kann jeder direkt über GitHub bearbeiten:
-
-###  So geht's
-
-Diese Website liegt als Open-Source-Projekt auf GitHub – jeder kann Änderungen vorschlagen:
-
-1. **Fork anlegen** – Öffne das Repository [NordCen/BreMeshPeople](https://github.com/NordCen/BreMeshPeople) und klicke oben rechts auf **Fork**.
-2. **Datei bearbeiten** – Navigiere in deinem Fork zur gewünschten Datei (z. B. `community-builds.md`) und klicke auf das Stift-Symbol ✏️ zum Bearbeiten.
-3. **Änderungen committen** – Beschreibe kurz, was du geändert hast, und klicke auf **Commit changes**.
-4. **Pull Request erstellen** – Gehe zurück zum Original-Repository und klicke auf **New Pull Request**. Wähle deinen Fork als Quelle aus.
-5. **Review & Merge** – Ein Maintainer prüft deinen Vorschlag und übernimmt ihn in die Live-Seite.
 
 > **Tipp:** Kleine Änderungen (Tippfehler, neue Links) kannst du direkt über die GitHub-Weboberfläche machen – kein lokales Git nötig.
