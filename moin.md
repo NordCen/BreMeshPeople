@@ -47,3 +47,10 @@ Solar-Knoten bitte mit „Solar“ kennzeichnen.
 - Höhe ist wichtiger als Sendeleistung
 - Metall, Stahlbeton und Wechselrichter meiden
 - Antenne wichtiger als Board-Modell
+
+<hr>
+
+## Community beitreten
+
+Nach dem Setup – komm in unseren Chat!  
+Wir nutzen **[Matrix](/matrix/)** als primären Community-Chat außerhalb des Funknetzes.

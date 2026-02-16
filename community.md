@@ -4,7 +4,7 @@ title: Netiquette & Community
 permalink: /community/
 ---
 
-# Netiquette & Community – Bremer Mesh
+# Netiquette & Community – BreMesh
 
 ## Gute Praxis
 
@@ -40,7 +40,17 @@ Unsere Community baut eigene Hardware, Firmware und Apps rund um MeshCore:
 
 <hr>
 
-## Lokale Kanäle
+## Kommunikation außerhalb des Mesh
+
+- **[Matrix](/matrix/)** – unser primärer Community-Chat (Server: hbme.sh)
+  - Space: [#bremesh:hbme.sh](https://matrix.to/#/%23bremesh:hbme.sh)
+- **Telegram:**
+  - [MeshCore Deutschland](https://t.me/meshcorede)
+  - [Meshtastic Bremen und Umzu](https://t.me/meshhbuz)
+
+<hr>
+
+## Lokale Kanäle (im Mesh)
 
 - `#bremesh`
 - `#ping`
