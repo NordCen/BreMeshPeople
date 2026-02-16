@@ -66,12 +66,12 @@ Wer Interesse hat: **Frag einfach in unseren [Kommunikationskanälen](/community
 
 ### Matrix-Server
 
-Die BreMesh-Community betreibt unter [mtrx.hbme.sh](https://mtrx.hbme.sh/) einen eigenen **Matrix-Server**. Matrix ist ein offenes, dezentrales Kommunikationsprotokoll – vergleichbar mit E-Mail, aber für Echtzeit-Chats. Nachrichten werden **Ende-zu-Ende verschlüsselt**, und da Matrix föderiert funktioniert, kann man mit Nutzern auf anderen Matrix-Servern kommunizieren, ohne an einen einzelnen Anbieter gebunden zu sein.
+Für die Kommunikation außerhalb des Mesh betreibt die BreMesh-Community einen eigenen **Matrix-Server** unter [mtrx.hbme.sh](https://mtrx.hbme.sh/). Matrix ist ein offenes, dezentrales Chat-Protokoll mit **Ende-zu-Ende-Verschlüsselung** – mehr dazu auf unserer [Matrix-Seite](/matrix/).
 
-Die Registrierung eines Benutzerkontos ist **Invite-only** und für Mitglieder der lokalen Community gedacht. Eine gute Möglichkeit, die Community kennenzulernen: Komm zum **MeshMittwoch-Stammtisch**, beteilige dich über die [Telegram-Gruppe](https://t.me/meshhbuz) oder melde dich direkt im Mesh.
+Unser Server ist **Invite-only**. Da Matrix aber föderiert funktioniert, kannst du unserem Space auch mit einem Account auf einem öffentlichen Server beitreten – zum Beispiel [matrix.org](https://matrix.org). Melde dich einfach im Mesh, im [Matrix-Space](/matrix/) oder in der [Telegram-Gruppe](https://t.me/meshhbuz), um einen Invite zu bekommen.
 
 - **Matrix-WebApp:** [mtrx.hbme.sh](https://mtrx.hbme.sh/)
-- **Account Registrierung:** Auf Einladung 
+- **Account-Registrierung:** Auf Einladung
 - **Administriert von:** bjo & Bartzi
 
 <hr>

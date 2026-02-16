@@ -221,8 +221,9 @@ powersaving on
 
 | Akku | Kapazität | Ohne Power Saving (11 mA) | Mit Power Saving (4,5 mA) |
 |------|-----------|---------------------------|---------------------------|
-| 18650 Li-Ion | 3.400 mAh | ~309 h ≈ **12,9 Tage** | ~756 h ≈ **31,5 Tage** |
-| LiPo-Zelle | 3.000 mAh | ~273 h ≈ **11,4 Tage** | ~667 h ≈ **27,8 Tage** |
+| 1× 18650 Li-Ion | 3.400 mAh | ~309 h ≈ **12,9 Tage** | ~756 h ≈ **31,5 Tage** |
+| 1× LiPo-Zelle | 3.000 mAh | ~273 h ≈ **11,4 Tage** | ~667 h ≈ **27,8 Tage** |
+| 3× 18650 (RePeter) | 10.200 mAh | ~927 h ≈ **38,6 Tage** | ~2.267 h ≈ **94,4 Tage** |
 
 > **Hinweis:** Die Werte sind theoretische Maximalwerte (Kapazität ÷ Stromverbrauch). In der Praxis hängt die Laufzeit von Temperatur, Sendehäufigkeit und Displaynutzung ab – aber die verdoppelte Laufzeit durch Power Saving macht einen enormen Unterschied, besonders bei Solar-Repeatern.
 
