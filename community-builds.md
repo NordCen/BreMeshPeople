@@ -46,6 +46,19 @@ Ein offenes Hardware-Design für einen kompakten MeshCore-Repeater auf Basis des
 - **Projekt:** [MeshCoreRepeater-RePeter](https://github.com/robrec/MeshCoreRepeater-RePeter)
 - **Typ:** Hardware-Design (PCB / Gehäuse / Zubehör)
 - **Autor:** Bartzi
+
+### FakeTec – DIY LoRa-Boards
+
+Das [FakeTec](/faketec/) ist ein Open-Source-PCB im Heltec-V3-Formfaktor auf Basis des ProMicro nRF52840 – günstig (~15 €), selbst lötbar und kompatibel mit MeshCore und Meshtastic.  
+In der BreMesh-Community sind aktuell vor allem **V4** (mit MOSFETs für GPS, Buzzer & LED) und **V5** (mit Batterieschutz und JST-Stecker) verbreitet.
+
+Wer Interesse hat: **Frag einfach in unseren [Kommunikationskanälen](/community/)** – einige Community-Mitglieder haben fertige Boards und helfen gerne beim Einstieg.
+
+- **Infos & Bauanleitung:** [FakeTec-Seite](/faketec/)
+- **Repository:** [github.com/gargomoma/fakeTec_pcb](https://github.com/gargomoma/fakeTec_pcb)
+- **Typ:** Hardware-Design (Open-Source-PCB)
+- **Community-Autoren:** gargomoma, lupusworax, ShimonHoranek
+
 <hr>
 
 

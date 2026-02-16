@@ -6,6 +6,30 @@ permalink: /community/
 
 # Netiquette & Community – BreMesh
 
+## Kontakt & Kanäle
+
+Du erreichst die BreMesh-Community über verschiedene Wege – im Mesh selbst und außerhalb:
+
+### Im Mesh
+
+- `Public` – öffentlicher Chat
+- `#bremesh` – lokaler Bremer Kanal
+- `#ping` – Reichweitentests (Bots antworten automatisch)
+- `#news` – Neuigkeiten
+- `#verkehr` – Verkehrsinfos
+
+### Außerhalb des Mesh
+
+- **[Matrix](/matrix/)** – unser primärer Community-Chat (Server: hbme.sh)
+  - Space: [#bremesh:hbme.sh](https://matrix.to/#/%23bremesh:hbme.sh)
+  - → [Was ist Matrix? Anleitung & Downloads](/matrix/)
+- **Telegram:**
+  - [MeshCore Deutschland](https://t.me/meshcorede)
+  - [Meshtastic Bremen und Umzu](https://t.me/meshhbuz)
+
+
+<hr>
+
 ## Gute Praxis
 
 - Keine Spam und Bots/Autoreplys im Public Channel
@@ -37,22 +61,3 @@ Unsere Community baut eigene Hardware, Firmware und Apps rund um MeshCore:
 
 - Tragende Knoten gern im Chat erwähnen
 - Änderungen oder Umbauten ankündigen
-
-<hr>
-
-## Kommunikation außerhalb des Mesh
-
-- **[Matrix](/matrix/)** – unser primärer Community-Chat (Server: hbme.sh)
-  - Space: [#bremesh:hbme.sh](https://matrix.to/#/%23bremesh:hbme.sh)
-- **Telegram:**
-  - [MeshCore Deutschland](https://t.me/meshcorede)
-  - [Meshtastic Bremen und Umzu](https://t.me/meshhbuz)
-
-<hr>
-
-## Lokale Kanäle (im Mesh)
-
-- `#bremesh`
-- `#ping`
-- `#news`
-- `#verkehr`

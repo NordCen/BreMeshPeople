@@ -34,7 +34,7 @@ Sie trennt klar zwischen **Client-Geräten (Companion)** und **reinen Weiterleit
 
 Du brauchst:
 
-- ein kompatibles LoRa-Board (z. B. ESP32 / Heltec)
+- ein kompatibles LoRa-Board (z. B. ESP32 / Heltec oder ein selbst gebautes [FakeTec](/faketec/))
 - eine 868-MHz-Antenne
 - etwas Platz mit halbwegs freier Sicht
 
