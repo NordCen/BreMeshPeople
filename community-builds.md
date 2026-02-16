@@ -58,7 +58,7 @@ Die BreMesh-Community betreibt unter [mtrx.hbme.sh](https://mtrx.hbme.sh/) einen
 Die Registrierung eines Benutzerkontos ist **Invite-only** und für Mitglieder der lokalen Community gedacht. Eine gute Möglichkeit, die Community kennenzulernen: Komm zum **MeshMittwoch-Stammtisch**, beteilige dich über die [Telegram-Gruppe](https://t.me/meshhbuz) oder melde dich direkt im Mesh.
 
 - **Matrix-WebApp:** [mtrx.hbme.sh](https://mtrx.hbme.sh/)
-- **Account Registrierung:** Nur auf Einladung
+- **Account Registrierung:** Auf Einladung 
 - **Administriert von:** bjo & Bartzi
 
 <hr>
