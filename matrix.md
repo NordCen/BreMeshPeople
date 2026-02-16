@@ -45,7 +45,7 @@ Unser Matrix-Server lautet **hbme.sh**.
 | **Android** | [Element im Play Store](https://play.google.com/store/apps/details?id=im.vector.app) |
 | **iOS** | [Element im App Store](https://apps.apple.com/app/element-messenger/id1083446067) |
 
-> **Wichtig:** Im App Store gibt es zwei Versionen – **Element X** (neu, noch nicht alle Features) und **Element** (bewährt, voller Funktionsumfang). **Bitte nutze Element (Classic)**, nicht Element X! Element X kann derzeit keine Spaces anzeigen und damit auch unseren BreMesh-Space nicht darstellen.
+> **Wichtig:** Im App Store gibt es zwei Versionen – **Element X** (neu, noch nicht alle Features) und **Element** (bewährt, voller Funktionsumfang). Es kann sein, dass der eine oder andere nicht alle Funktionen untersützt - hier ist noch ein wenig research nötig..
 
 <hr>
 
