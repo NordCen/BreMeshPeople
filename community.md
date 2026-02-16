@@ -40,13 +40,14 @@ Du erreichst die BreMesh-Community über verschiedene Wege – im Mesh selbst un
 
 ## Community Projekte
 
+
 Unsere Community baut eigene Hardware, Firmware, Apps und Infrastruktur rund um MeshCore:
 
 | Projekt | Beschreibung | Autor |
 |---------|-------------|-------|
 | **[hbme.sh](https://hbme.sh)** | Diese Website – Open Source auf GitHub Pages | NordCen |
 | **[BreMesh App](https://bremesh.de/)** | Companion-App für iOS & Android mit Karte, Chat und Netzübersicht | Nagios |
-| **[RePeter Firmware](https://github.com/timniklas/RePeter-Firmware)** | MeshCore-Fork mit vorkonfigurierten Frequenzen und Power Saving | Nagios |
+| **[MeshCore Firmware](https://github.com/timniklas/RePeter-Firmware)** | MeshCore-Fork mit vorkonfigurierten Frequenzen und Power Saving | Nagios |
 | **[RePeter Hardware](https://github.com/robrec/MeshCoreRepeater-RePeter)** | Kompakter Repeater mit BMS, Solar und IP66-Gehäuse (~45 €) | Bartzi |
 | **[FakeTec](/faketec/)** | DIY LoRa-Board im Heltec-Formfaktor (~15 €, selbst lötbar) | Community |
 | **[Matrix-Server](/matrix/)** | Eigener Matrix-Server für verschlüsselten Community-Chat | bjo & Bartzi |
