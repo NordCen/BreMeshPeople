@@ -138,7 +138,7 @@ Prüfe ob die Bootloader-Version **≥ 0.8** ist. Falls nicht, Update von [Adafr
 ### Bootloader flashen
 
 1. Gerät per USB anschließen
-2. **RST und GND schnell doppelt** mit einer Pinzette brücken
+2. **Reset-Taster schnell doppelt drücken** (das FakeTec hat einen eigenen Reset-Button)
 3. Es erscheint ein USB-Laufwerk namens **„NICENANO"**
 4. Die `.uf2`-Datei auf das Laufwerk kopieren
 5. Warten bis das Gerät neu startet
@@ -195,7 +195,7 @@ Die meisten aktuellen ProMicros werden mit **Bootloader 0.6.0** ausgeliefert. Di
 > ⚠️ **Vorher unbedingt die Keys sichern!** Das Flashen des neuen Bootloaders **löscht das Gerät komplett**.
 
 1. Den verbesserten Bootloader als **ZIP-Datei** von [oltaco/Adafruit_nRF52_Bootloader_OTAFIX](https://github.com/oltaco/Adafruit_nRF52_Bootloader_OTAFIX) herunterladen
-2. Das Gerät per USB in den DFU-Modus versetzen (RST + GND doppelt brücken → USB-Laufwerk erscheint)
+2. Über die MeshCore-App mit dem Gerät verbinden (Admin-Login) und im **Command Line**-Tab `start ota` eingeben – das Gerät geht in den DFU-Modus
 3. Den oltaco-Bootloader via **nRF DFU App** (siehe oben) auf das Gerät flashen
 4. Nach dem Neustart ist der neue Bootloader aktiv und OTA-fähig
 5. Jetzt die aktuelle **MeshCore-Firmware** per DFU OTA flashen (wie oben beschrieben)
