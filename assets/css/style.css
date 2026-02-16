@@ -143,6 +143,17 @@ hr{
 .site-footer{
   margin-top: 40px;
 }
+.footer-badges{
+  max-width: var(--max);
+  margin: 0 auto 8px;
+  padding: 0 18px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.footer-badges a{ text-decoration: none; }
+.footer-badges img{ height: 20px; }
 .footer-inner{
   max-width: var(--max);
   margin: 0 auto;

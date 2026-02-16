@@ -27,7 +27,7 @@ Open Source und offen für Beiträge: Jeder kann per Pull Request Inhalte ergän
 
 ## Firmware
 
-### RePeter Firmware
+### BreMesh Firmware
 
 Ein Fork der offiziellen MeshCore-Firmware, speziell angepasst für die RePeter-Hardware und das BreMesh-Netz. Enthält vorkonfigurierte Frequenzen für die 868-MHz-Region, aktiviertes powersaving, ein eigenes Boot-Logo und fertige Release-Binaries über GitHub Actions, sodass kein eigenes Kompilieren nötig ist. Unterstützt ProMicro nRF52840 Boards.
 
@@ -53,7 +53,7 @@ Sie zeigt hauptsächlich eine Karte mit den Repeatern und Verbindungen im BreMes
 
 ## Hardware
 
-### RePeter – MeshCore Repeater
+### RePeter – BreMesh MeshCore Repeater
 
 Ein offenes Hardware-Design für einen kompakten MeshCore-Repeater auf Basis des nRF52840 ProMicro und SX1262 LoRa-Chip (Ra-01SH-P oder HT-RA62). Der RePeter verbraucht nur ca. 0.4 Wh/Tag unterstützt 1–3× 18650-Akkus mit BMS sowie Solarbetrieb über USB-C und ist ab ca. 45 € nachzubauen. PCB, Gehäuse (IP66), Antenna-Bracket und ein eigenes ChargeBoard sind im Projekt enthalten – dazu optionale Erweiterungen wie OLED-Display, RTC und Temperatur-/Wettersensoren.
 
