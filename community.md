@@ -16,6 +16,8 @@ Du erreichst die BreMesh-Community über verschiedene Wege – im Mesh selbst un
 - `#bremesh` – lokaler Bremer Kanal
 - `#ping` – Reichweitentests.
   - Befehl: `ping` - Für automatische Antworten von PingBots für Tests der Reichweite.
+  - Befehl: `!prefix 1A` - Zeigt Repeater mit Präfix "1A" (nur kürzlich gehörte)
+  - Befehl: `!prefix free 0-F` - Zeigt verfügbare/freie Präfixe von BreMesh Repeatern
 - `#news` – Nachrichten von [butenunbinnen.de](https://www.butenunbinnen.de/)
 - `#verkehr` – Verkehrsinfos von [bremenvier.de/verkehr](https://www.bremenvier.de/verkehr/)
 - `#wetter` - Wetterdaten für Bremen von [openweathermaps.com](https://openweathermap.org/). Befehle für diesen Channel sind:
