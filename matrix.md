@@ -17,19 +17,33 @@ Unser Matrix-Server lautet **hbme.sh**.
 
 <hr>
 
+## Unser Community Space – #bremesh:hbme.sh
+
+Der zentrale Treffpunkt auf Matrix ist unser **Community Space**:  
+[#bremesh:hbme.sh](https://matrix.to/#/%23bremesh:hbme.sh)
+
+Ein Space ist in Matrix so etwas wie ein Ordner oder eine Gruppe, die mehrere Räume bündelt. Wenn du dem Space beitrittst, siehst du automatisch alle zugehörigen Räume und kannst dich einfach durchklicken.
+
+
+<hr>
+
 ## Account erstellen
 
 1. **Element installieren** – lade den Client für deine Plattform herunter (siehe Tabelle unten) und starte ihn  (Oder benutzte den [WebClient](https://mtrx.hbme.sh/))
 2. Wähle **„Konto erstellen"** (bzw. „Sign Up" / „Registrieren")  
-3. Bei der Server-Auswahl auf **„Bearbeiten"** klicken und den Homeserver auf **`hbme.sh`** ändern  
-4. Trage deinen gewünschten **Benutzernamen** und ein **Passwort** ein  
-5. Gib den **Registrierungs-Token** ein, den du von einem Community-Mitglied erhalten hast  
-6. Fertig – du bist drin!
+3. Trage deinen gewünschten **Benutzernamen** und ein **Passwort** ein  
+4. Gib den **Registrierungs-Token** ein, den du von einem Community-Mitglied erhalten hast  
+5. Fertig – du bist drin!
+> **Tipp:** Wenn du deinen Account auf unserem Server **hbme.sh** erstellt hast, wirst du dem Space automatisch vorgeschlagen. Aber auch Nutzer von anderen Matrix-Servern können dem Space beitreten – das ist das Schöne an Föderation!
 
-> **Hinweis:** Die Registrierung ist Token-basiert. Du brauchst einen Einladungs-Token von jemandem aus der Community, um dich anzumelden. Frag einfach in der Telegram-Gruppe oder im Mesh nach einem Token.
->
+<hr>
 
+### So trittst du dem Space bei
 
+1. Öffne Element (oder einen anderen Matrix-Client)
+2. Klicke auf **„Einem Space beitreten"** oder suche nach `#bremesh:hbme.sh`
+3. Alternativ: Klicke direkt auf diesen Link → [#bremesh:hbme.sh](https://matrix.to/#/%23bremesh:hbme.sh)
+4. Du landest im Space und siehst alle öffentlichen Räume der BreMesh-Community
 <hr>
 
 ## Element – der empfohlene Client
@@ -45,39 +59,19 @@ Unser Matrix-Server lautet **hbme.sh**.
 | **Android** | [Element im Play Store](https://play.google.com/store/apps/details?id=im.vector.app) |
 | **iOS** | [Element im App Store](https://apps.apple.com/app/element-messenger/id1083446067) |
 
-> **Wichtig:** Im App Store gibt es zwei Versionen – **Element X** (neu, noch nicht alle Features) und **Element** (bewährt, voller Funktionsumfang). Es kann sein, dass der eine oder andere nicht alle Funktionen untersützt - hier ist noch ein wenig research nötig..
 
-<hr>
 
-## Bridges – WhatsApp, Telegram & Co. in Matrix
 
-Wer einen eigenen Matrix-Server betreibt (oder Zugang zu einem privat gehosteten Server hat), kann sogenannte **Bridges** einrichten.  
-Bridges verbinden Matrix mit anderen Messengern – zum Beispiel **WhatsApp**, **Telegram**, Signal, Discord oder IRC.
 
-### Wie funktioniert das?
 
-Eine Bridge läuft auf dem Matrix-Server und verbindet sich mit deinem Account beim jeweiligen Dienst.  
-Alle Nachrichten werden automatisch zwischen Matrix und dem anderen Messenger synchronisiert – du chattest in Element, dein Gegenüber in WhatsApp oder Telegram, ohne etwas davon zu merken.
 
-### Vorteile
 
-- **Ein Client für alles** – du brauchst nur noch Element und hast WhatsApp, Telegram und Matrix-Chats an einem Ort  
-- **Desktop-Nutzung** – WhatsApp und Co. bequem am Rechner nutzen, ohne deren offizielle Desktop-Apps oder Handykopplung  
-- **Benachrichtigungen bündeln** – keine fünf verschiedenen Messenger-Apps mehr
 
-### Sicherheitsaspekt
 
-- Die Bridge läuft auf **deinem eigenen Server** – deine Nachrichten gehen nicht über Drittanbieter-Infrastruktur  
-- Du behältst die **volle Kontrolle** über deine Daten und Logs  
-- Innerhalb von Matrix bleibt die **Ende-zu-Ende-Verschlüsselung** erhalten  
-- Die Brücke entschlüsselt Nachrichten nur lokal auf deinem Server, um sie an den jeweiligen Dienst weiterzuleiten – es gibt keinen zusätzlichen Mittelsmann  
-- Im Vergleich zu WhatsApp Web oder Telegram Web, die im Browser des Anbieters laufen, hast du mit einer selbst gehosteten Bridge **deutlich mehr Kontrolle und Transparenz**
-
-> **Hinweis:** Bridges sind ein Feature für Fortgeschrittene und erfordern einen eigenen Server mit Root-Zugang. Auf dem BreMesh-Server (hbme.sh) sind aktuell keine öffentlichen Bridges eingerichtet.
 
 <hr>
 
 ## Exkurs: BW-Messenger
 
-Der [BW-Messenger](https://www.bwmessenger.de/) ist die offizielle Kommunikationslösung der Bundeswehr – und basiert vollständig auf dem **Matrix-Protokoll**.  
+Der [BW-Messenger/Bundesmessenger](https://messenger.bwi.de/) ist die offizielle Kommunikationslösung der Bundeswehr – und basiert vollständig auf dem **Matrix-Protokoll**.  
 Damit ist die Bundeswehr einer der größten institutionellen Nutzer von Matrix weltweit und trägt aktiv zur Weiterentwicklung des Open-Source-Projekts bei – unter anderem durch Finanzierung, Sicherheitsaudits und Anforderungen an Skalierbarkeit und Verschlüsselung, von denen die gesamte Matrix-Community profitiert.
