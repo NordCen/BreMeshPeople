@@ -10,9 +10,10 @@ permalink: /matrix/
 
 [Matrix](https://matrix.org/) ist ein offenes, dezentrales Kommunikationsprotokoll – ähnlich wie E-Mail, aber für Echtzeit-Chat.  
 Jeder kann einen eigenen Server betreiben, und alle Server sprechen untereinander (Föderation).  
-Nachrichten sind Ende-zu-Ende-verschlüsselt, es gibt Räume, Spaces, Sub-Spaces, Sub-Sub-(..), Dateiaustausch, Videotelefonie, Voicecalls und vieles mehr – alles ohne Abhängigkeit von einem einzelnen Anbieter.
+Nachrichten sind Ende-zu-Ende-verschlüsselt, es gibt Räume, Spaces, Sub-Spaces, Sub-Sub-(..), Videotelefonie, ScreenSharing und vieles mehr – alles ohne Abhängigkeit von einem einzelnen Anbieter.
 
-Das BreMesh nutzt neben dem Telegram-Channel [Meshtastic Bremen und Umzu](https://t.me/meshhbuz) von Heinrich  - auch [Matrix](/matrix/) als **Community Space außerhalb des Funknetzes**.  
+Das BreMesh nutzt neben dem Telegram-Channel [Meshtastic Bremen und Umzu](https://t.me/meshhbuz) von Heinrich - auch [Matrix](/matrix/) als **Community Space außerhalb des Funknetzes**.
+
 Die Gründe hierfür sind **DATENSCHUTZ!** und die Möglichkeit neben Text auch umfangreiches ScreenSharing/Gruppencalls zu machen.
 
 Unser Matrix-Server lautet **hbme.sh**.
