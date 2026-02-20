@@ -52,5 +52,5 @@ Solar-Knoten bitte mit „Solar“ kennzeichnen.
 
 ## Community beitreten
 
-Nach dem Setup – komm in unseren Chat!  
-Wir nutzen **[Matrix](/matrix/)** als primären Community-Chat außerhalb des Funknetzes.
+Nach dem Setup – komm in unsere Community!  
+Alle Infos zu Chat, Austausch und Kontakt findest du auf der **[Community-Seite](/community/)**.
