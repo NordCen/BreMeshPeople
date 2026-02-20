@@ -4,7 +4,7 @@ title: Matrix – Community Space für das BreMesh
 permalink: /matrix/
 ---
 
-# Matrix – Chat für das Bremer Mesh
+# Matrix – Community Space für das BreMesh
 
 ## Was ist Matrix?
 
