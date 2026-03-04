@@ -1,0 +1,481 @@
+/* ================================================================
+   BreMesh Live Map – Styles
+   hbme.sh design shell with BIA-style dark map embedded
+   ================================================================ */
+
+/* ── Livemap-specific layout ─────────────────────────── */
+.livemap-main {
+  padding: 0;
+  max-width: none;
+}
+
+/* ── Map wrapper (full-width, dark) ──────────────────── */
+.map-wrap {
+  background: #0d1117;
+  border-bottom: 1px solid var(--line, #e6e6e6);
+}
+
+.map-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 18px;
+  background: #13151e;
+  border-bottom: 1px solid #2a3040;
+  gap: 12px;
+}
+
+.map-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.map-toolbar-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #d0d4dc;
+  letter-spacing: 0.5px;
+}
+
+.ws-status {
+  font-size: 0.7rem;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  color: #505a6a;
+}
+
+.map-toolbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.map-route-label {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  font-size: 0.7rem;
+  color: #505a6a;
+}
+
+/* Live dot */
+.live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #505a6a;
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+.live-dot.connected {
+  background: #27ae60;
+  box-shadow: 0 0 6px #27ae60;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 4px #27ae60; }
+  50% { box-shadow: 0 0 10px #27ae60; }
+}
+
+/* Route map */
+.route-map {
+  height: 60vh;
+  min-height: 400px;
+  background: #0d1117;
+}
+.route-map .leaflet-control-attribution {
+  background: rgba(10,12,18,0.8) !important;
+  color: #505a6a !important;
+  font-size: 9px;
+}
+.route-map .leaflet-control-attribution a { color: #7a8494 !important; }
+.route-map .leaflet-control-zoom a {
+  background: #191d28;
+  color: #d0d4dc;
+  border-color: #2a3040;
+}
+.route-map .leaflet-control-zoom a:hover {
+  background: #222838;
+}
+
+/* Map info overlay badge */
+.map-pkt-badge {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  font-size: 0.65rem;
+  color: #7a8494;
+  background: #10121a;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid #2a3040;
+}
+
+/* ── Repeater Markers on Map ─────────────────────────── */
+.rpt-marker-wrap { background: none !important; border: none !important; }
+.rpt-marker {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: #3498db;
+  border: 2px solid rgba(52,152,219,0.4);
+  box-shadow: 0 0 6px #3498db;
+  position: relative;
+  transition: width 0.15s, height 0.15s, opacity 0.15s, border-width 0.15s, box-shadow 0.15s;
+}
+.rpt-marker.rpt-active {
+  animation: rpt-pulse 1.8s ease-out infinite;
+}
+.rpt-marker.rpt-dimmed {
+  width: 5px; height: 5px;
+  border-width: 1px;
+  opacity: 0.25;
+  box-shadow: none;
+}
+.rpt-marker::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1.5px solid #3498db;
+  opacity: 0;
+}
+.rpt-marker.rpt-active::after {
+  animation: rpt-ring 1.8s ease-out infinite;
+}
+.rpt-marker.rpt-dimmed::after { display: none; }
+@keyframes rpt-pulse {
+  0%   { transform: scale(1); box-shadow: 0 0 6px #3498db; }
+  50%  { transform: scale(1.3); box-shadow: 0 0 18px #3498db, 0 0 40px rgba(52,152,219,0.3); }
+  100% { transform: scale(1); box-shadow: 0 0 6px #3498db; }
+}
+@keyframes rpt-ring {
+  0%   { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* ── Route Endpoints ─────────────────────────────────── */
+.route-endpoint-wrap { z-index: 900 !important; background: none !important; border: none !important; }
+.route-endpoint {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  line-height: 1;
+  background: #191d28;
+  border: 2px solid #3498db;
+  box-shadow: 0 0 8px #3498db;
+}
+.route-endpoint.route-src { border-color: #2ecc71; box-shadow: 0 0 8px #2ecc71; }
+.route-endpoint.route-dst { border-color: #e74c3c; box-shadow: 0 0 8px #e74c3c; }
+.route-endpoint.route-rx {
+  font-size: 0.75rem;
+  border: 2px solid #3498db;
+  border-radius: 50%;
+  background: #13151e;
+  width: 20px; height: 20px;
+}
+
+/* Star for ADVERT source */
+.route-star-wrap { background: none !important; border: none !important; z-index: 900 !important; }
+.route-star-center {
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px;
+  font-size: 1.3rem;
+  filter: drop-shadow(0 0 8px rgba(255, 200, 0, 0.8));
+  animation: star-pulse 2s ease-in-out infinite;
+}
+@keyframes star-pulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(255, 200, 0, 0.8)); }
+  50% { transform: scale(1.15); filter: drop-shadow(0 0 14px rgba(255, 200, 0, 1)); }
+}
+
+/* Path labels */
+.route-path-label-wrap { background: none !important; border: none !important; z-index: 700 !important; }
+.route-path-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+  border: 2px solid rgba(255,255,255,0.3);
+  box-shadow: 0 0 6px rgba(0,0,0,0.5);
+}
+
+/* Speech bubble */
+.detail-speech-wrap { z-index: 950 !important; }
+.detail-speech-bubble {
+  background: #191d28;
+  border: 1px solid #27ae60;
+  border-radius: 8px;
+  padding: 6px 10px;
+  max-width: 200px;
+  font-size: 0.72rem;
+  color: #d0d4dc;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+  position: relative;
+}
+.detail-speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #27ae60;
+}
+.detail-speech-sender { color: #1abc9c; font-weight: 600; font-size: 0.68rem; margin-bottom: 2px; }
+.detail-speech-text { font-style: italic; }
+.detail-speech-channel { color: #8e44ad; font-size: 0.62rem; margin-top: 2px; }
+
+/* ── Below Map: KPI + Feed (light hbme.sh theme) ─────── */
+.below-map {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 18px 40px;
+}
+
+/* KPI Row */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 24px 0;
+}
+.kpi-card {
+  background: #f8f9fa;
+  border: 1px solid var(--line, #e6e6e6);
+  border-radius: 8px;
+  padding: 16px 12px;
+  text-align: center;
+}
+.kpi-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #111;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  line-height: 1.2;
+}
+.kpi-label {
+  font-size: 0.72rem;
+  color: var(--muted, #666);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+/* Feed Section */
+.feed-section {
+  background: #fff;
+  border: 1px solid var(--line, #e6e6e6);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.feed-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line, #e6e6e6);
+  background: #f8f9fa;
+}
+.feed-heading h3 {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 650;
+  margin: 0;
+  letter-spacing: 0.2px;
+}
+.feed-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.feed-action-label {
+  font-size: 0.78rem;
+  color: var(--muted, #666);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.feed-btn {
+  background: transparent;
+  color: var(--muted, #666);
+  border: 1px solid var(--line, #e6e6e6);
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.feed-btn:hover {
+  color: #111;
+  border-color: #bbb;
+}
+.feed-scroll {
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.feed-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--muted, #666);
+  font-size: 0.85rem;
+}
+
+/* ── Packet entries (light theme) ────────────────────── */
+.pkt-entry {
+  padding: 8px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background 0.15s;
+  font-size: 0.82rem;
+}
+.pkt-entry:hover { background: #f8f9fa; }
+.pkt-entry-new { animation: pkt-flash 0.5s ease-out; }
+@keyframes pkt-flash {
+  0% { background: rgba(52, 152, 219, 0.1); }
+  100% { background: transparent; }
+}
+.pkt-entry .pkt-row1 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.pkt-entry .pkt-time {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  font-size: 0.72rem;
+  color: #999;
+  min-width: 60px;
+}
+.pkt-entry .pkt-type {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.pkt-entry .pkt-hops {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  font-size: 0.72rem;
+  color: #888;
+  margin-left: auto;
+}
+.pkt-entry .pkt-snr {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  font-size: 0.7rem;
+  color: #999;
+  min-width: 42px;
+  text-align: right;
+}
+.pkt-entry .pkt-route {
+  font-size: 0.6rem;
+  color: #aaa;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  text-transform: uppercase;
+}
+.pkt-entry .pkt-row2 {
+  margin-top: 2px;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  font-size: 0.7rem;
+  color: #888;
+}
+.pkt-entry .pkt-row3 {
+  margin-top: 3px;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Hop trail */
+.pkt-hop-trail {
+  white-space: normal !important;
+  overflow: visible !important;
+  line-height: 1.6;
+}
+.pkt-hop-trail .hop-addr small {
+  font-size: 0.58rem;
+  color: #888;
+  font-weight: 400;
+}
+.pkt-hop-trail .hop-arrow {
+  color: #bbb;
+  margin: 0 1px;
+  font-size: 0.6rem;
+}
+.pkt-hop-trail .pkt-src {
+  color: #27ae60;
+  font-weight: 600;
+  font-size: 0.68rem;
+}
+
+/* Payload type colors (light-friendly) */
+.type-advert { background: rgba(39,174,96,0.12); color: #1e8449; }
+.type-txt { background: rgba(52,152,219,0.12); color: #2471a3; }
+.type-grp { background: rgba(155,89,182,0.12); color: #7d3c98; }
+.type-ack { background: rgba(149,165,166,0.1); color: #717d7e; }
+.type-req { background: rgba(230,126,34,0.12); color: #ca6f1e; }
+.type-response { background: rgba(241,196,15,0.12); color: #b7950b; }
+.type-trace { background: rgba(231,76,60,0.1); color: #c0392b; }
+.type-path { background: rgba(241,196,15,0.1); color: #b7950b; }
+.type-default { background: rgba(0,0,0,0.04); color: #888; }
+
+/* Feed payload helpers */
+.feed-icon { margin-right: 3px; font-size: 0.72rem; }
+.feed-dim { color: #888; font-size: 0.74rem; }
+.feed-addr { font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace; color: #2471a3; font-size: 0.74rem; }
+.feed-msg {
+  color: #333;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.feed-chan { color: #7d3c98; font-weight: 600; font-size: 0.74rem; }
+.feed-locked { color: #b7950b; font-size: 0.7rem; font-style: italic; }
+.feed-badge-dec {
+  display: inline-block;
+  font-size: 0.6rem;
+  background: rgba(39,174,96,0.12);
+  border: 1px solid #27ae60;
+  color: #1e8449;
+  border-radius: 3px;
+  padding: 0 3px;
+  margin-left: 3px;
+  vertical-align: middle;
+  line-height: 1.4;
+}
+
+/* Multi-path badge */
+.pkt-multipath-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #9b59b6, #3498db);
+  padding: 1px 6px;
+  border-radius: 8px;
+  margin-left: auto;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 860px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .map-toolbar { flex-direction: column; align-items: flex-start; gap: 4px; }
+}
+@media (max-width: 600px) {
+  .kpi-row { grid-template-columns: 1fr 1fr; }
+  .route-map { height: 50vh; min-height: 300px; }
+  .feed-scroll { max-height: 300px; }
+  .map-toolbar-right { display: none; }
+}

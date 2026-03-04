@@ -1,0 +1,753 @@
+/* ================================================================
+   BreMesh Live Map – Public Map for hbme.sh
+   Connects to wss://api.hbme.sh/ws/public
+   No custom repeaters, GRP_TXT limited to Public + #ping
+   ================================================================ */
+(() => {
+"use strict";
+
+// ── Config ──────────────────────────────────────────────
+const WS_URL = "wss://api.hbme.sh/ws/public";
+const API_BASE = "https://api.hbme.sh/api/public";
+const LIVE_MAX = 200;
+
+const ROUTE_COLORS = [
+    "#3498db", "#2ecc71", "#e74c3c", "#f39c12", "#9b59b6",
+    "#1abc9c", "#e67e22", "#e84393", "#00cec9", "#fd79a8",
+];
+const TYPE_CLASSES = {
+    ADVERT: "type-advert", TXT_MSG: "type-txt", GRP_TXT: "type-grp",
+    ACK: "type-ack", REQ: "type-req", RESPONSE: "type-response",
+    TRACE: "type-trace", PATH: "type-path",
+};
+
+// ── State ───────────────────────────────────────────────
+let addressBook = {};
+let liveCount = 0;
+let ws = null;
+let wsTimer = null;
+const feedByHash = {};
+
+// Route map
+let routeMap = null;
+let routePolyline = null;
+let routeMarkers = [];
+let rptMarkerMap = {};
+let routeFadeTimer = null;
+let routeHashPrefix = null;
+let routePathLayers = [];
+
+// ── DOM helpers ─────────────────────────────────────────
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+function el(tag, attrs = {}, children = []) {
+    const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+        if (k === "text") { e.textContent = v; continue; }
+        if (k === "html") { e.innerHTML = v; continue; }
+        if (k === "style" && typeof v === "object") { Object.assign(e.style, v); continue; }
+        e.setAttribute(k, v);
+    }
+    for (const c of children) {
+        if (typeof c === "string") e.appendChild(document.createTextNode(c));
+        else if (c) e.appendChild(c);
+    }
+    return e;
+}
+
+function escHtml(s) {
+    const d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+}
+
+// ── API ─────────────────────────────────────────────────
+async function api(endpoint, params = {}) {
+    const url = new URL(`${API_BASE}/${endpoint}`);
+    for (const [k, v] of Object.entries(params))
+        if (v != null && v !== "") url.searchParams.set(k, v);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+    return res.json();
+}
+
+function isEncryptedDM(text) {
+    if (!text || text.length < 4) return false;
+    let bad = 0;
+    for (let i = 0; i < text.length; i++) {
+        const c = text.charCodeAt(i);
+        if (c < 32 && c !== 10 && c !== 13 && c !== 9) bad++;
+        else if (c === 0xFFFD) bad++;
+        else if (c > 126 && c < 160) bad++;
+    }
+    return (bad / text.length) > 0.25;
+}
+
+// ── Address Book ────────────────────────────────────────
+function addrName(a) { return a ? (addressBook[a.toLowerCase()]?.name || "") : ""; }
+function addrLabel(a) { const n = addrName(a); return n ? `${a} (${n})` : a; }
+
+async function loadAddressBook() {
+    try {
+        const data = await api("address-book");
+        addressBook = {};
+        for (const e of data.addresses) {
+            const a = e.addr.toLowerCase();
+            if (!addressBook[a] || e.name) addressBook[a] = e;
+        }
+    } catch (e) { console.error("AddressBook:", e); }
+}
+
+// ── Type class helper ───────────────────────────────────
+function typeClass(short) {
+    return TYPE_CLASSES[short] || "type-default";
+}
+
+// ── Time formatting ─────────────────────────────────────
+function fmtTimeFeed(iso) {
+    if (!iso) return "–";
+    return new Date(iso).toLocaleTimeString("de-DE", {
+        hour: "2-digit", minute: "2-digit", second: "2-digit",
+    });
+}
+
+// ── Payload summary ─────────────────────────────────────
+function buildPayloadSummary(short, pd, pkt) {
+    if (!pd) {
+        if (short === "ADVERT" && pkt.name)
+            return `<span class="feed-icon">📡</span> <strong>${escHtml(pkt.name)}</strong>`;
+        return "";
+    }
+    switch (pd.type) {
+        case "ADVERT": {
+            let parts = [];
+            if (pd.name) parts.push(`<strong>${escHtml(pd.name)}</strong>`);
+            if (pd.device_type_name) parts.push(`<span class="feed-dim">${escHtml(pd.device_type_name)}</span>`);
+            if (pd.source_addr) parts.push(`<span class="feed-addr">${pd.source_addr}</span>`);
+            if (pd.battery_pct != null) parts.push(`<span class="feed-dim">🔋${pd.battery_pct}%</span>`);
+            return parts.length ? `<span class="feed-icon">📡</span> ${parts.join(" · ")}` : "";
+        }
+        case "TXT_MSG":
+            if (pd.text && isEncryptedDM(pd.text))
+                return `<span class="feed-icon">💬</span> <span class="feed-locked">🔒 DM (verschlüsselt)</span>`;
+            return pd.text
+                ? `<span class="feed-icon">💬</span> <span class="feed-msg">${escHtml(pd.text.substring(0, 120))}</span>`
+                : "";
+        case "GRP_TXT": {
+            let line = `<span class="feed-icon">📢</span>`;
+            if (pd.decrypted === true) line += `<span class="feed-badge-dec">🔓</span>`;
+            if (pd.channel_name) line += ` <span class="feed-chan">#${escHtml(pd.channel_name)}</span>`;
+            if (pd.decrypted === true && pd.text) {
+                line += ` ${pd.sender ? `<span style="color:#1abc9c">${escHtml(pd.sender)}:</span>` : ""}<span class="feed-msg">${escHtml(pd.text.substring(0, 100))}</span>`;
+            } else if (pd.decrypted === false) {
+                line += ` <span class="feed-locked">🔒 verschlüsselt</span>`;
+            }
+            return line;
+        }
+        case "ACK":
+            return pd.acked_hash
+                ? `<span class="feed-icon">✓</span> <span class="feed-dim">ACK ${pd.acked_hash.substring(0, 12)}…</span>`
+                : "";
+        default:
+            return "";
+    }
+}
+
+// ── Rich Hops HTML ──────────────────────────────────────
+function buildHopsRichHtml(hopsStr) {
+    if (!hopsStr) return "";
+    return hopsStr.split(",").map(a => {
+        const addr = a.trim();
+        const n = addrName(addr);
+        return `<span class="hop-addr ${n ? "hop-known" : "hop-unknown"}" title="${n || addr}">${addr}${n ? "<small>(" + escHtml(n) + ")</small>" : ""}</span>`;
+    }).join('<span class="hop-arrow">→</span>');
+}
+
+function prependSourceToPath(hopsStr, pkt, group) {
+    const src = pkt.source_addr || (group && group.source_addr);
+    if (!src) return hopsStr;
+    if (!(pkt.payload_type || "").includes("ADVERT")) return hopsStr;
+    const parts = hopsStr ? hopsStr.split(",").map(a => a.trim().toLowerCase()) : [];
+    if (parts.length && parts[0] === src.toLowerCase()) return hopsStr;
+    return src.toLowerCase() + (hopsStr ? "," + hopsStr : "");
+}
+
+// ── WebSocket ───────────────────────────────────────────
+function connectWS() {
+    ws = new WebSocket(WS_URL);
+    ws.onopen = () => {
+        $("#liveDot").classList.add("connected");
+        $("#feedStatus").textContent = "Verbunden";
+        if (wsTimer) { clearTimeout(wsTimer); wsTimer = null; }
+    };
+    ws.onclose = () => {
+        $("#liveDot").classList.remove("connected");
+        $("#feedStatus").textContent = "Reconnect…";
+        wsTimer = setTimeout(connectWS, 3000);
+    };
+    ws.onerror = () => ws.close();
+    ws.onmessage = ev => {
+        try {
+            const msg = JSON.parse(ev.data);
+            if (msg.type === "packet_ingested") onPacket(msg.data);
+            else if (msg.type === "ingestor_stats") updateKPIs(msg.data);
+        } catch (_) {}
+    };
+}
+
+// ── Packet handler ──────────────────────────────────────
+function onPacket(pkt) {
+    if ($("#feedPause").checked) return;
+
+    // Remove empty placeholder
+    const empty = $("#feedScroll .feed-empty");
+    if (empty) empty.remove();
+
+    const feed = $("#feedScroll");
+    const short = (pkt.payload_type || "").replace("PAYLOAD_TYPE_", "");
+    const cls = typeClass(short);
+    const time = fmtTimeFeed(pkt.time);
+    const route = (pkt.route_type || "").replace("ROUTE_TYPE_", "");
+    const hPrefix = pkt.hash_prefix || (pkt.packet_hash || "").substring(0, 16);
+
+    // Multi-path grouping
+    if (hPrefix && feedByHash[hPrefix]) {
+        const group = feedByHash[hPrefix];
+        const isAdv = (pkt.payload_type || "").includes("ADVERT");
+        const curHops = isAdv ? prependSourceToPath(pkt.hops || "", pkt, group) : (pkt.hops || "");
+        if (curHops && !group.paths.includes(curHops)) group.paths.push(curHops);
+        if (pkt.source_addr && !group.source_addr) group.source_addr = pkt.source_addr;
+        if (pkt.name && !group.source_name) group.source_name = pkt.name;
+        group.count++;
+
+        const badgeLabel = isAdv ? `⭐ ${group.paths.length}× Sichtungen` : `${group.paths.length}× Pfade`;
+        const badge = group.el.querySelector(".pkt-multipath-badge");
+        if (badge) {
+            badge.textContent = badgeLabel;
+        } else if (group.paths.length > 1) {
+            const row1 = group.el.querySelector(".pkt-row1");
+            if (row1) row1.appendChild(el("span", { class: "pkt-multipath-badge", text: badgeLabel }));
+        }
+
+        group.el.classList.add("pkt-entry-new");
+        requestAnimationFrame(() => { group.el.offsetHeight; group.el.classList.remove("pkt-entry-new"); });
+
+        if (feed.firstChild !== group.el) feed.insertBefore(group.el, feed.firstChild);
+        showRouteOnMap(pkt, group);
+        return;
+    }
+
+    // New packet
+    liveCount++;
+    $("#feedCount").textContent = liveCount.toLocaleString();
+
+    const isAdv = (pkt.payload_type || "").includes("ADVERT");
+    const srcLabel = pkt.source_addr
+        ? (pkt.name ? `${pkt.source_addr} (${pkt.name})` : addrLabel(pkt.source_addr))
+        : "";
+    const primaryHops = isAdv ? prependSourceToPath(pkt.hops || "", pkt, null) : (pkt.hops || "");
+    const hopsRich = buildHopsRichHtml(primaryHops);
+    const pd = pkt.decoded?.payload_details;
+    const payloadSummary = buildPayloadSummary(short, pd, pkt);
+
+    const altPaths = pkt.alt_paths || [];
+    const rawPaths = [pkt.hops || ""];
+    for (const ap of altPaths) { if (ap && !rawPaths.includes(ap)) rawPaths.push(ap); }
+    const allPaths = isAdv ? rawPaths.map(p => prependSourceToPath(p, pkt, null)) : rawPaths;
+    const isMulti = allPaths.length > 1;
+
+    const entry = el("div", { class: "pkt-entry pkt-entry-new" });
+    entry.innerHTML = `
+        <div class="pkt-row1">
+            <span class="pkt-time">${time}</span>
+            <span class="pkt-type ${cls}">${short}</span>
+            <span class="pkt-route">${route}</span>
+            <span class="pkt-hops">${pkt.hop_count || 0}h</span>
+            <span class="pkt-snr">${pkt.snr != null ? pkt.snr.toFixed(1) : "–"} dB</span>
+            ${isMulti ? `<span class="pkt-multipath-badge">${isAdv ? "⭐ " : ""}${allPaths.length}× ${isAdv ? "Sichtungen" : "Pfade"}</span>` : ""}
+        </div>
+        <div class="pkt-row2 pkt-hop-trail">${hopsRich || "–"} ${srcLabel ? '<span class="pkt-src">← ' + escHtml(srcLabel) + "</span>" : ""}</div>
+        ${payloadSummary ? `<div class="pkt-row3">${payloadSummary}</div>` : ""}
+    `;
+
+    if (hPrefix) {
+        feedByHash[hPrefix] = {
+            el: entry,
+            paths: [...allPaths],
+            count: pkt.sighting_count || 1,
+            pkt,
+            source_addr: pkt.source_addr || null,
+            source_name: pkt.name || null,
+        };
+        entry._hashPrefix = hPrefix;
+    }
+
+    if (feed.firstChild) feed.insertBefore(entry, feed.firstChild);
+    else feed.appendChild(entry);
+
+    while (feed.children.length > LIVE_MAX) {
+        const last = feed.lastChild;
+        if (last && last._hashPrefix && feedByHash[last._hashPrefix]?.el === last) {
+            delete feedByHash[last._hashPrefix];
+        }
+        feed.removeChild(last);
+    }
+
+    requestAnimationFrame(() => { entry.offsetHeight; entry.classList.remove("pkt-entry-new"); });
+    showRouteOnMap(pkt);
+}
+
+// ── KPI Updates ─────────────────────────────────────────
+function updateKPIs(stats) {
+    const pkts = $("#kpiPackets");
+    const reps = $("#kpiRepeaters");
+    if (pkts && stats.total_packets != null)
+        pkts.textContent = stats.total_packets.toLocaleString();
+    if (reps && stats.repeater_count != null)
+        reps.textContent = stats.repeater_count.toLocaleString();
+}
+
+async function loadInitialKPIs() {
+    try {
+        const stats = await api("ingestor-stats");
+        updateKPIs(stats);
+    } catch (e) { console.error("KPIs:", e); }
+}
+
+// ── Preload Feed ────────────────────────────────────────
+async function preloadFeed(count = 20) {
+    try {
+        const data = await api("recent-packets", { limit: count });
+        if (!data.packets || !data.packets.length) return;
+
+        // Remove empty placeholder
+        const empty = $("#feedScroll .feed-empty");
+        if (empty) empty.remove();
+
+        const pkts = data.packets.slice().reverse();
+        const feed = $("#feedScroll");
+
+        for (const pkt of pkts) {
+            if (!pkt.time && pkt.received_at) pkt.time = pkt.received_at;
+
+            const short = (pkt.payload_type || "").replace("PAYLOAD_TYPE_", "");
+            const cls = typeClass(short);
+            const time = fmtTimeFeed(pkt.time);
+            const route = (pkt.route_type || "").replace("ROUTE_TYPE_", "");
+            const hPrefix = (pkt.packet_hash || "").substring(0, 16);
+
+            const isAdv = (pkt.payload_type || "").includes("ADVERT");
+            const srcLabel = pkt.source_addr
+                ? (pkt.name ? `${pkt.source_addr} (${pkt.name})` : addrLabel(pkt.source_addr))
+                : "";
+
+            if (hPrefix && feedByHash[hPrefix]) {
+                const group = feedByHash[hPrefix];
+                const curHops = isAdv ? prependSourceToPath(pkt.hops || "", pkt, group) : (pkt.hops || "");
+                if (curHops && !group.paths.includes(curHops)) group.paths.push(curHops);
+                group.count++;
+                continue;
+            }
+
+            liveCount++;
+            const primaryHops = isAdv ? prependSourceToPath(pkt.hops || "", pkt, null) : (pkt.hops || "");
+            const hopsRich = buildHopsRichHtml(primaryHops);
+            const pd = pkt.decoded?.payload_details;
+            const payloadSummary = buildPayloadSummary(short, pd, pkt);
+
+            const entry = el("div", { class: "pkt-entry" });
+            entry.innerHTML = `
+                <div class="pkt-row1">
+                    <span class="pkt-time">${time}</span>
+                    <span class="pkt-type ${cls}">${short}</span>
+                    <span class="pkt-route">${route}</span>
+                    <span class="pkt-hops">${pkt.hop_count || 0}h</span>
+                    <span class="pkt-snr">${pkt.snr != null ? pkt.snr.toFixed(1) : "–"} dB</span>
+                </div>
+                <div class="pkt-row2 pkt-hop-trail">${hopsRich || "–"} ${srcLabel ? '<span class="pkt-src">← ' + escHtml(srcLabel) + "</span>" : ""}</div>
+                ${payloadSummary ? `<div class="pkt-row3">${payloadSummary}</div>` : ""}
+            `;
+
+            if (hPrefix) {
+                feedByHash[hPrefix] = { el: entry, paths: [primaryHops], count: 1, pkt, source_addr: pkt.source_addr || null, source_name: pkt.name || null };
+                entry._hashPrefix = hPrefix;
+            }
+
+            if (feed.firstChild) feed.insertBefore(entry, feed.firstChild);
+            else feed.appendChild(entry);
+        }
+        $("#feedCount").textContent = liveCount.toLocaleString();
+
+        // Show most recent drawable route on map
+        for (const pkt of data.packets) {
+            if (!pkt.time && pkt.received_at) pkt.time = pkt.received_at;
+            const hopsArr = (pkt.hops || "").split(",").map(a => a.trim().toLowerCase()).filter(Boolean);
+            if (hopsArr.length < 2) continue;
+            const segs = resolveHopSegments(hopsArr);
+            const coords = segs.flatMap(s => s.coords);
+            if (coords.length >= 2) { showRouteOnMap(pkt); break; }
+        }
+    } catch (e) { console.warn("Feed preload failed:", e); }
+}
+
+// ── Route Map ───────────────────────────────────────────
+function initRouteMap() {
+    if (routeMap) return;
+    const mapEl = document.getElementById("routeMap");
+    if (!mapEl) return;
+
+    routeMap = L.map(mapEl, {
+        center: [53.0847, 8.8024],
+        zoom: 12,
+        zoomControl: true,
+        attributionControl: true,
+    });
+
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+        subdomains: "abcd",
+    }).addTo(routeMap);
+
+    setTimeout(() => routeMap.invalidateSize(), 200);
+}
+
+function populateRepeaterMarkers() {
+    if (!routeMap) return;
+    Object.values(rptMarkerMap).forEach(m => routeMap.removeLayer(m));
+    rptMarkerMap = {};
+
+    for (const [addr, info] of Object.entries(addressBook)) {
+        if (info.lat == null || info.lon == null) continue;
+        const icon = L.divIcon({
+            className: "rpt-marker-wrap",
+            html: `<div class="rpt-marker" title="${escHtml(info.name || addr)}"></div>`,
+            iconSize: [12, 12],
+            iconAnchor: [6, 6],
+        });
+        const m = L.marker([info.lat, info.lon], { icon, interactive: true })
+            .bindTooltip(`<b>${escHtml(info.name || addr)}</b><br><span style="font-family:monospace;font-size:0.7rem">${addr}</span>`, { direction: "top", offset: [0, -8] });
+        m.addTo(routeMap);
+        rptMarkerMap[addr.toLowerCase()] = m;
+    }
+}
+
+function resolveHopSegments(hops) {
+    const segments = [];
+    let cur = { coords: [], addrs: [] };
+    for (const addr of hops) {
+        const info = addressBook[addr];
+        if (info && info.lat != null && info.lon != null) {
+            cur.coords.push([info.lat, info.lon]);
+            cur.addrs.push(addr);
+        } else {
+            if (cur.coords.length >= 2) segments.push(cur);
+            cur = { coords: [], addrs: [] };
+        }
+    }
+    if (cur.coords.length >= 2) segments.push(cur);
+    return segments;
+}
+
+function showRouteOnMap(pkt, group) {
+    if (!routeMap) return;
+    const isAdvert = (pkt.payload_type || "").includes("ADVERT");
+    const sourceAddr = (pkt.source_addr || (group && group.source_addr) || "").toLowerCase();
+    const sourceName = pkt.name || (group && group.source_name) || "";
+
+    const hopsStr = isAdvert ? prependSourceToPath(pkt.hops, pkt, group) : (pkt.hops || "");
+    const hops = hopsStr ? hopsStr.split(",").map(a => a.trim().toLowerCase()) : [];
+    if (hops.length < 2) return;
+
+    const hPrefix = pkt.hash_prefix || (pkt.packet_hash || "").substring(0, 16);
+
+    const segments = resolveHopSegments(hops);
+    const coords = segments.flatMap(s => s.coords);
+    const resolvedAddrs = segments.flatMap(s => s.addrs);
+    if (coords.length < 2) return;
+
+    // Multi-path: add to existing
+    if (hPrefix && hPrefix === routeHashPrefix && group) {
+        const pathIdx = group.paths.length - 1;
+        const color = ROUTE_COLORS[pathIdx % ROUTE_COLORS.length];
+
+        for (const seg of segments) {
+            const glow = L.polyline(seg.coords, {
+                color, weight: 8, opacity: 0.2,
+                lineCap: "round", lineJoin: "round", interactive: false,
+            }).addTo(routeMap);
+            const line = L.polyline(seg.coords, {
+                color, weight: 3, opacity: 0.85,
+                lineCap: "round", lineJoin: "round",
+                dashArray: "8 6", interactive: false,
+            }).addTo(routeMap);
+            routeMarkers.push(glow, line);
+            routePathLayers.push({ polyline: line, glow });
+
+            let offset = 0;
+            const animLine = () => {
+                offset -= 0.5;
+                if (line && line._path) line._path.style.strokeDashoffset = offset;
+                line._animFrame = requestAnimationFrame(animLine);
+            };
+            animLine();
+        }
+
+        // Activate pulse on involved repeaters
+        for (const addr of resolvedAddrs) {
+            const marker = rptMarkerMap[addr];
+            if (!marker) continue;
+            const mel = marker.getElement();
+            if (!mel) continue;
+            const dot = mel.querySelector(".rpt-marker");
+            if (dot) {
+                dot.classList.add("rpt-active");
+                dot.classList.remove("rpt-dimmed");
+                dot.style.background = color;
+                dot.style.borderColor = color + "66";
+                dot.style.boxShadow = `0 0 6px ${color}`;
+            }
+        }
+
+        const allCoords = routeMarkers
+            .filter(l => l instanceof L.Polyline)
+            .flatMap(l => l.getLatLngs());
+        if (allCoords.length > 1) {
+            routeMap.flyToBounds(L.latLngBounds(allCoords).pad(0.12), { duration: 0.6, maxZoom: 16 });
+        }
+
+        const short = (pkt.payload_type || "").replace("PAYLOAD_TYPE_", "");
+        const infoEl = $("#mapRouteInfo");
+        if (infoEl && group) {
+            if (isAdvert && sourceName) {
+                infoEl.innerHTML = `<span class="map-pkt-badge"><span class="pkt-type ${typeClass(short)}">${short}</span> ⭐ <strong>${escHtml(sourceName)}</strong> → ${group.paths.length} Pfade</span>`;
+            } else {
+                infoEl.innerHTML = `<span class="map-pkt-badge"><span class="pkt-type ${typeClass(short)}">${short}</span> ${group.paths.length} Pfade · ${hops.length}h</span>`;
+            }
+        }
+        return;
+    }
+
+    // New route – clear & draw
+    clearRoute();
+    routeHashPrefix = hPrefix;
+    routePathLayers = [];
+
+    // Dim all markers, activate involved ones
+    for (const [, marker] of Object.entries(rptMarkerMap)) {
+        const mel = marker.getElement();
+        if (!mel) continue;
+        const dot = mel.querySelector(".rpt-marker");
+        if (dot) {
+            dot.classList.remove("rpt-active");
+            dot.classList.add("rpt-dimmed");
+            dot.style.background = "";
+            dot.style.borderColor = "";
+            dot.style.boxShadow = "";
+        }
+    }
+
+    const boundsCoords = [];
+    const altPaths = pkt.alt_paths || [];
+    const rawPaths = [pkt.hops || ""];
+    for (const ap of altPaths) { if (ap && !rawPaths.includes(ap)) rawPaths.push(ap); }
+    const allPaths = isAdvert ? rawPaths.map(p => prependSourceToPath(p, pkt, group)) : rawPaths;
+
+    for (const p of allPaths) {
+        const pH = p.split(",").map(a => a.trim().toLowerCase());
+        const segs = resolveHopSegments(pH);
+        for (const s of segs) boundsCoords.push(...s.coords);
+    }
+    if (boundsCoords.length < 2) return;
+
+    const bounds = L.latLngBounds(boundsCoords).pad(0.12);
+    routeMap.once("moveend", () => {
+        for (let pi = 0; pi < allPaths.length; pi++) {
+            const pathHops = allPaths[pi].split(",").map(a => a.trim().toLowerCase());
+            const pathSegments = resolveHopSegments(pathHops);
+            if (pathSegments.length === 0) continue;
+
+            const color = ROUTE_COLORS[pi % ROUTE_COLORS.length];
+
+            for (const seg of pathSegments) {
+                for (const addr of seg.addrs) {
+                    const marker = rptMarkerMap[addr];
+                    if (!marker) continue;
+                    const mel = marker.getElement();
+                    if (!mel) continue;
+                    const dot = mel.querySelector(".rpt-marker");
+                    if (dot) {
+                        dot.classList.add("rpt-active");
+                        dot.classList.remove("rpt-dimmed");
+                        dot.style.background = color;
+                        dot.style.borderColor = color + "66";
+                        dot.style.boxShadow = `0 0 6px ${color}`;
+                    }
+                }
+            }
+
+            for (const seg of pathSegments) {
+                const glow = L.polyline(seg.coords, {
+                    color, weight: 8, opacity: 0.2,
+                    lineCap: "round", lineJoin: "round", interactive: false,
+                }).addTo(routeMap);
+                routeMarkers.push(glow);
+
+                const line = L.polyline(seg.coords, {
+                    color, weight: 3, opacity: 0.85,
+                    lineCap: "round", lineJoin: "round",
+                    dashArray: "8 6", interactive: false,
+                }).addTo(routeMap);
+                routeMarkers.push(line);
+                routePathLayers.push({ polyline: line, glow });
+
+                let offset = 0;
+                const animLine = () => {
+                    offset -= 0.5;
+                    if (line && line._path) line._path.style.strokeDashoffset = offset;
+                    line._animFrame = requestAnimationFrame(animLine);
+                };
+                animLine();
+            }
+
+            // Path labels for multi-path
+            const allPathCoords = pathSegments.flatMap(s => s.coords);
+            if (allPaths.length > 1 && allPathCoords.length >= 2) {
+                const midIdx = Math.floor(allPathCoords.length / 2);
+                const pathLabel = L.divIcon({
+                    className: "route-path-label-wrap",
+                    html: `<div class="route-path-label" style="background:${color}">${pi + 1}</div>`,
+                    iconSize: [20, 20], iconAnchor: [10, 10],
+                });
+                routeMarkers.push(L.marker(allPathCoords[midIdx], { icon: pathLabel, interactive: false }).addTo(routeMap));
+            }
+        }
+
+        // Endpoint markers
+        if (isAdvert && sourceAddr) {
+            const srcInfo = addressBook[sourceAddr];
+            if (srcInfo && srcInfo.lat != null && srcInfo.lon != null) {
+                const starIcon = L.divIcon({
+                    className: "route-star-wrap",
+                    html: `<div class="route-star-center" title="${escHtml(sourceName || sourceAddr)}">⭐</div>`,
+                    iconSize: [28, 28], iconAnchor: [14, 14],
+                });
+                routeMarkers.push(L.marker([srcInfo.lat, srcInfo.lon], { icon: starIcon, interactive: false }).addTo(routeMap));
+            }
+            const seenRx = new Set();
+            for (let pi = 0; pi < allPaths.length; pi++) {
+                const pH = allPaths[pi].split(",").map(a => a.trim().toLowerCase());
+                const lastA = pH[pH.length - 1];
+                if (seenRx.has(lastA)) continue;
+                seenRx.add(lastA);
+                const rxInfo = addressBook[lastA];
+                if (rxInfo && rxInfo.lat != null && rxInfo.lon != null) {
+                    const rxColor = ROUTE_COLORS[pi % ROUTE_COLORS.length];
+                    const rxName = rxInfo.name || lastA;
+                    const rxIcon = L.divIcon({
+                        className: "route-endpoint-wrap",
+                        html: `<div class="route-endpoint route-rx" title="${escHtml(rxName)}" style="border-color:${rxColor}">📥</div>`,
+                        iconSize: [20, 20], iconAnchor: [10, 10],
+                    });
+                    routeMarkers.push(L.marker([rxInfo.lat, rxInfo.lon], { icon: rxIcon, interactive: false }).addTo(routeMap));
+                }
+            }
+        } else {
+            if (coords.length >= 1) {
+                const srcIcon = L.divIcon({
+                    className: "route-endpoint-wrap",
+                    html: `<div class="route-endpoint route-src">📡</div>`,
+                    iconSize: [18, 18], iconAnchor: [9, 9],
+                });
+                routeMarkers.push(L.marker(coords[0], { icon: srcIcon, interactive: false }).addTo(routeMap));
+            }
+            if (coords.length > 1) {
+                const dstIcon = L.divIcon({
+                    className: "route-endpoint-wrap",
+                    html: `<div class="route-endpoint route-dst">📥</div>`,
+                    iconSize: [18, 18], iconAnchor: [9, 9],
+                });
+                routeMarkers.push(L.marker(coords[coords.length - 1], { icon: dstIcon, interactive: false }).addTo(routeMap));
+            }
+        }
+
+        // Speech bubble for public GRP_TXT
+        const _pd = pkt.decoded?.payload_details;
+        if (_pd && _pd.type === "GRP_TXT" && _pd.decrypted === true && _pd.text) {
+            const originAddr = hops[0] || sourceAddr;
+            const originInfo = originAddr ? addressBook[originAddr] : null;
+            if (originInfo && originInfo.lat != null && originInfo.lon != null) {
+                let bHtml = "";
+                if (_pd.sender) bHtml += `<div class="detail-speech-sender">${escHtml(_pd.sender)}</div>`;
+                bHtml += `<div class="detail-speech-text">${escHtml(_pd.text)}</div>`;
+                if (_pd.channel_name) bHtml += `<div class="detail-speech-channel">#${escHtml(_pd.channel_name)}</div>`;
+                const bIcon = L.divIcon({
+                    className: "detail-speech-wrap",
+                    html: `<div class="detail-speech-bubble">${bHtml}</div>`,
+                    iconSize: [200, 80], iconAnchor: [100, 84],
+                });
+                routeMarkers.push(L.marker([originInfo.lat, originInfo.lon], { icon: bIcon, interactive: false }).addTo(routeMap));
+            }
+        }
+    });
+    routeMap.flyToBounds(bounds, { duration: 0.8, maxZoom: 16 });
+
+    // Update info label
+    const short = (pkt.payload_type || "").replace("PAYLOAD_TYPE_", "");
+    const hopNames = resolvedAddrs.map(a => addrName(a) || a);
+    const infoEl = $("#mapRouteInfo");
+    if (infoEl) {
+        if (isAdvert && sourceName && allPaths.length > 1) {
+            infoEl.innerHTML = `<span class="map-pkt-badge"><span class="pkt-type ${typeClass(short)}">${short}</span> ⭐ <strong>${escHtml(sourceName)}</strong> → ${allPaths.length} Pfade</span>`;
+        } else if (isAdvert && sourceName) {
+            infoEl.innerHTML = `<span class="map-pkt-badge"><span class="pkt-type ${typeClass(short)}">${short}</span> ⭐ <strong>${escHtml(sourceName)}</strong> → ${hopNames.join(" → ")}</span>`;
+        } else {
+            infoEl.innerHTML = `<span class="map-pkt-badge"><span class="pkt-type ${typeClass(short)}">${short}</span> ${hopNames.join(" → ")} <span>${hops.length}h</span></span>`;
+        }
+    }
+
+    // Auto-fade pulse after 15s
+    if (routeFadeTimer) clearTimeout(routeFadeTimer);
+    routeFadeTimer = setTimeout(() => {
+        for (const [, marker] of Object.entries(rptMarkerMap)) {
+            const mel = marker.getElement();
+            if (!mel) continue;
+            const dot = mel.querySelector(".rpt-marker");
+            if (dot) { dot.classList.remove("rpt-active"); dot.style.boxShadow = ""; }
+        }
+    }, 15000);
+}
+
+function clearRoute() {
+    for (const pl of routePathLayers) {
+        if (pl.polyline && pl.polyline._animFrame) cancelAnimationFrame(pl.polyline._animFrame);
+    }
+    if (routePolyline && routePolyline._animFrame) cancelAnimationFrame(routePolyline._animFrame);
+    for (const layer of routeMarkers) routeMap.removeLayer(layer);
+    routeMarkers = [];
+    routePolyline = null;
+    routePathLayers = [];
+    routeHashPrefix = null;
+}
+
+// ── Init ────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", async () => {
+    $("#feedClear").addEventListener("click", () => {
+        $("#feedScroll").innerHTML = '<div class="feed-empty">Warte auf Pakete…</div>';
+        liveCount = 0;
+        $("#feedCount").textContent = "0";
+    });
+
+    await loadAddressBook();
+
+    initRouteMap();
+    populateRepeaterMarkers();
+
+    await preloadFeed(20);
+    await loadInitialKPIs();
+
+    connectWS();
+});
+
+})();
