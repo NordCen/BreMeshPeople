@@ -340,49 +340,11 @@
 .activity-type.type-path { background: rgba(241,196,15,0.15); color: #f1c40f; }
 .activity-type.type-default { background: rgba(255,255,255,0.06); color: #888; }
 
-/* ── Below Map: KPI strip (light hbme.sh theme) ──────── */
-.below-map {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 0 18px 40px;
-}
-
-/* KPI Row */
-.kpi-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin: 24px 0;
-}
-.kpi-card {
-  background: #f8f9fa;
-  border: 1px solid var(--line, #e6e6e6);
-  border-radius: 8px;
-  padding: 16px 12px;
-  text-align: center;
-}
-.kpi-value {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #111;
-  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
-  line-height: 1.2;
-}
-.kpi-label {
-  font-size: 0.72rem;
-  color: var(--muted, #666);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 4px;
-}
-
 /* ── Responsive ──────────────────────────────────────── */
 @media (max-width: 860px) {
-  .kpi-row { grid-template-columns: repeat(3, 1fr); }
   .map-toolbar { flex-direction: column; align-items: flex-start; gap: 4px; }
 }
 @media (max-width: 600px) {
-  .kpi-row { grid-template-columns: 1fr; }
   .route-map { height: 60vh; min-height: 350px; }
   .activity-overlay { width: 220px; bottom: 12px; left: 8px; }
   .map-toolbar-right { display: none; }

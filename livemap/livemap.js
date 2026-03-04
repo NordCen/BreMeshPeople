@@ -36,6 +36,7 @@ let rptMarkerMap = {};
 let routeFadeTimer = null;
 let routeHashPrefix = null;
 let routePathLayers = [];
+let routeGeneration = 0;  // generation counter to invalidate stale moveend callbacks
 
 // ── DOM helpers ─────────────────────────────────────────
 const $ = s => document.querySelector(s);
@@ -191,7 +192,7 @@ function connectWS() {
         try {
             const msg = JSON.parse(ev.data);
             if (msg.type === "packet_ingested") onPacket(msg.data);
-            else if (msg.type === "ingestor_stats") updateKPIs(msg.data);
+            // ingestor_stats ignored (KPI removed)
         } catch (_) {}
     };
 }
@@ -330,22 +331,7 @@ function markActiveFeedEntry(entry) {
     entry.classList.add("activity-active");
 }
 
-// ── KPI Updates ─────────────────────────────────────────
-function updateKPIs(stats) {
-    const pkts = $("#kpiPackets");
-    const reps = $("#kpiRepeaters");
-    if (pkts && stats.total_packets != null)
-        pkts.textContent = stats.total_packets.toLocaleString();
-    if (reps && stats.repeater_count != null)
-        reps.textContent = stats.repeater_count.toLocaleString();
-}
 
-async function loadInitialKPIs() {
-    try {
-        const stats = await api("ingestor-stats");
-        updateKPIs(stats);
-    } catch (e) { console.error("KPIs:", e); }
-}
 
 // ── Preload Feed ────────────────────────────────────────
 async function preloadFeed(count = 20) {
@@ -561,6 +547,7 @@ function showRouteOnMap(pkt, group) {
     clearRoute();
     routeHashPrefix = hPrefix;
     routePathLayers = [];
+    const gen = ++routeGeneration;  // capture generation for this draw
 
     // Dim all markers, activate involved ones
     for (const [, marker] of Object.entries(rptMarkerMap)) {
@@ -576,11 +563,17 @@ function showRouteOnMap(pkt, group) {
         }
     }
 
+    // Use group.paths (accumulated from WS) when available, else rebuild from pkt
+    let allPaths;
+    if (group && group.paths && group.paths.length > 0) {
+        allPaths = [...group.paths];
+    } else {
+        const altPaths = pkt.alt_paths || [];
+        const rawPaths = [pkt.hops || ""];
+        for (const ap of altPaths) { if (ap && !rawPaths.includes(ap)) rawPaths.push(ap); }
+        allPaths = isAdvert ? rawPaths.map(p => prependSourceToPath(p, pkt, group)) : rawPaths;
+    }
     const boundsCoords = [];
-    const altPaths = pkt.alt_paths || [];
-    const rawPaths = [pkt.hops || ""];
-    for (const ap of altPaths) { if (ap && !rawPaths.includes(ap)) rawPaths.push(ap); }
-    const allPaths = isAdvert ? rawPaths.map(p => prependSourceToPath(p, pkt, group)) : rawPaths;
 
     for (const p of allPaths) {
         const pH = p.split(",").map(a => a.trim().toLowerCase());
@@ -591,6 +584,7 @@ function showRouteOnMap(pkt, group) {
 
     const bounds = L.latLngBounds(boundsCoords).pad(0.12);
     routeMap.once("moveend", () => {
+        if (gen !== routeGeneration) return;  // stale callback – skip
         for (let pi = 0; pi < allPaths.length; pi++) {
             const pathHops = allPaths[pi].split(",").map(a => a.trim().toLowerCase());
             const pathSegments = resolveHopSegments(pathHops);
@@ -767,8 +761,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     populateRepeaterMarkers();
 
     await preloadFeed(10);
-    await loadInitialKPIs();
-
     connectWS();
 });
 
