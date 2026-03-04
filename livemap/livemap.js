@@ -9,7 +9,7 @@
 // ── Config ──────────────────────────────────────────────
 const WS_URL = "wss://api.hbme.sh/ws/public";
 const API_BASE = "https://api.hbme.sh/api/public";
-const LIVE_MAX = 200;
+const LIVE_MAX = 5;
 
 const ROUTE_COLORS = [
     "#3498db", "#2ecc71", "#e74c3c", "#f39c12", "#9b59b6",
@@ -197,21 +197,56 @@ function connectWS() {
 }
 
 // ── Packet handler ──────────────────────────────────────
-function onPacket(pkt) {
-    if ($("#feedPause").checked) return;
+function pktHasRoute(pkt) {
+    const isAdv = (pkt.payload_type || "").includes("ADVERT");
+    const hopsStr = isAdv ? prependSourceToPath(pkt.hops || "", pkt, null) : (pkt.hops || "");
+    const hops = hopsStr ? hopsStr.split(",").map(a => a.trim().toLowerCase()).filter(Boolean) : [];
+    if (hops.length < 2) return false;
+    const segs = resolveHopSegments(hops);
+    return segs.flatMap(s => s.coords).length >= 2;
+}
 
-    // Remove empty placeholder
-    const empty = $("#feedScroll .feed-empty");
-    if (empty) empty.remove();
+function activityIcon(short) {
+    switch (short) {
+        case "ADVERT": return "📡";
+        case "TXT_MSG": return "💬";
+        case "GRP_TXT": return "📢";
+        case "ACK": return "✓";
+        case "TRACE": return "🔍";
+        default: return "📦";
+    }
+}
+
+function activityLabel(pkt, short) {
+    const pd = pkt.decoded?.payload_details;
+    if (short === "ADVERT") {
+        const name = pd?.name || pkt.name;
+        return name ? name : (pkt.source_addr || "Repeater");
+    }
+    if (short === "GRP_TXT" && pd?.decrypted && pd?.text) {
+        const sender = pd.sender ? `${pd.sender}: ` : "";
+        return sender + pd.text.substring(0, 60);
+    }
+    if (short === "TXT_MSG" && pd?.text) {
+        return pd.text.substring(0, 60);
+    }
+    const hops = (pkt.hops || "").split(",").map(a => a.trim()).filter(Boolean);
+    const firstHop = hops[0] ? (addrName(hops[0]) || hops[0]) : "";
+    const lastHop = hops.length > 1 ? (addrName(hops[hops.length - 1]) || hops[hops.length - 1]) : "";
+    return firstHop && lastHop ? `${firstHop} → ${lastHop}` : short;
+}
+
+function onPacket(pkt) {
+    // Only show packets with drawable routes
+    if (!pktHasRoute(pkt)) return;
 
     const feed = $("#feedScroll");
     const short = (pkt.payload_type || "").replace("PAYLOAD_TYPE_", "");
     const cls = typeClass(short);
     const time = fmtTimeFeed(pkt.time);
-    const route = (pkt.route_type || "").replace("ROUTE_TYPE_", "");
     const hPrefix = pkt.hash_prefix || (pkt.packet_hash || "").substring(0, 16);
 
-    // Multi-path grouping
+    // Multi-path: update existing entry
     if (hPrefix && feedByHash[hPrefix]) {
         const group = feedByHash[hPrefix];
         const isAdv = (pkt.payload_type || "").includes("ADVERT");
@@ -220,56 +255,36 @@ function onPacket(pkt) {
         if (pkt.source_addr && !group.source_addr) group.source_addr = pkt.source_addr;
         if (pkt.name && !group.source_name) group.source_name = pkt.name;
         group.count++;
-
-        const badgeLabel = isAdv ? `⭐ ${group.paths.length}× Sichtungen` : `${group.paths.length}× Pfade`;
-        const badge = group.el.querySelector(".pkt-multipath-badge");
-        if (badge) {
-            badge.textContent = badgeLabel;
-        } else if (group.paths.length > 1) {
-            const row1 = group.el.querySelector(".pkt-row1");
-            if (row1) row1.appendChild(el("span", { class: "pkt-multipath-badge", text: badgeLabel }));
-        }
-
-        group.el.classList.add("pkt-entry-new");
-        requestAnimationFrame(() => { group.el.offsetHeight; group.el.classList.remove("pkt-entry-new"); });
-
+        group.el.classList.add("activity-item-new");
+        requestAnimationFrame(() => { group.el.offsetHeight; group.el.classList.remove("activity-item-new"); });
         if (feed.firstChild !== group.el) feed.insertBefore(group.el, feed.firstChild);
         showRouteOnMap(pkt, group);
         return;
     }
 
-    // New packet
     liveCount++;
     $("#feedCount").textContent = liveCount.toLocaleString();
 
     const isAdv = (pkt.payload_type || "").includes("ADVERT");
-    const srcLabel = pkt.source_addr
-        ? (pkt.name ? `${pkt.source_addr} (${pkt.name})` : addrLabel(pkt.source_addr))
-        : "";
-    const primaryHops = isAdv ? prependSourceToPath(pkt.hops || "", pkt, null) : (pkt.hops || "");
-    const hopsRich = buildHopsRichHtml(primaryHops);
-    const pd = pkt.decoded?.payload_details;
-    const payloadSummary = buildPayloadSummary(short, pd, pkt);
+    const label = activityLabel(pkt, short);
+    const icon = activityIcon(short);
+    const hops = (pkt.hops || "").split(",").filter(Boolean).length;
 
+    const entry = el("div", { class: "activity-item activity-item-new" });
+    entry.innerHTML = `
+        <span class="activity-icon">${icon}</span>
+        <div class="activity-body">
+            <div class="activity-label">${escHtml(label)}</div>
+            <div class="activity-meta">${time} · ${hops}h</div>
+        </div>
+        <span class="activity-type ${cls}">${short}</span>
+    `;
+
+    const primaryHops = isAdv ? prependSourceToPath(pkt.hops || "", pkt, null) : (pkt.hops || "");
     const altPaths = pkt.alt_paths || [];
     const rawPaths = [pkt.hops || ""];
     for (const ap of altPaths) { if (ap && !rawPaths.includes(ap)) rawPaths.push(ap); }
     const allPaths = isAdv ? rawPaths.map(p => prependSourceToPath(p, pkt, null)) : rawPaths;
-    const isMulti = allPaths.length > 1;
-
-    const entry = el("div", { class: "pkt-entry pkt-entry-new" });
-    entry.innerHTML = `
-        <div class="pkt-row1">
-            <span class="pkt-time">${time}</span>
-            <span class="pkt-type ${cls}">${short}</span>
-            <span class="pkt-route">${route}</span>
-            <span class="pkt-hops">${pkt.hop_count || 0}h</span>
-            <span class="pkt-snr">${pkt.snr != null ? pkt.snr.toFixed(1) : "–"} dB</span>
-            ${isMulti ? `<span class="pkt-multipath-badge">${isAdv ? "⭐ " : ""}${allPaths.length}× ${isAdv ? "Sichtungen" : "Pfade"}</span>` : ""}
-        </div>
-        <div class="pkt-row2 pkt-hop-trail">${hopsRich || "–"} ${srcLabel ? '<span class="pkt-src">← ' + escHtml(srcLabel) + "</span>" : ""}</div>
-        ${payloadSummary ? `<div class="pkt-row3">${payloadSummary}</div>` : ""}
-    `;
 
     if (hPrefix) {
         feedByHash[hPrefix] = {
@@ -282,6 +297,9 @@ function onPacket(pkt) {
         };
         entry._hashPrefix = hPrefix;
     }
+    entry._pktData = pkt;
+    entry._group = feedByHash[hPrefix] || null;
+    entry.addEventListener("click", () => onFeedEntryClick(entry));
 
     if (feed.firstChild) feed.insertBefore(entry, feed.firstChild);
     else feed.appendChild(entry);
@@ -294,8 +312,22 @@ function onPacket(pkt) {
         feed.removeChild(last);
     }
 
-    requestAnimationFrame(() => { entry.offsetHeight; entry.classList.remove("pkt-entry-new"); });
+    requestAnimationFrame(() => { entry.offsetHeight; entry.classList.remove("activity-item-new"); });
     showRouteOnMap(pkt);
+    markActiveFeedEntry(entry);
+}
+
+// ── Feed click → show route ─────────────────────────────
+function onFeedEntryClick(entry) {
+    const pkt = entry._pktData;
+    if (!pkt) return;
+    markActiveFeedEntry(entry);
+    showRouteOnMap(pkt, entry._group);
+}
+
+function markActiveFeedEntry(entry) {
+    $$(".activity-item.activity-active").forEach(e => e.classList.remove("activity-active"));
+    entry.classList.add("activity-active");
 }
 
 // ── KPI Updates ─────────────────────────────────────────
@@ -321,26 +353,18 @@ async function preloadFeed(count = 20) {
         const data = await api("recent-packets", { limit: count });
         if (!data.packets || !data.packets.length) return;
 
-        // Remove empty placeholder
-        const empty = $("#feedScroll .feed-empty");
-        if (empty) empty.remove();
-
         const pkts = data.packets.slice().reverse();
         const feed = $("#feedScroll");
 
         for (const pkt of pkts) {
             if (!pkt.time && pkt.received_at) pkt.time = pkt.received_at;
+            if (!pktHasRoute(pkt)) continue;
 
             const short = (pkt.payload_type || "").replace("PAYLOAD_TYPE_", "");
             const cls = typeClass(short);
             const time = fmtTimeFeed(pkt.time);
-            const route = (pkt.route_type || "").replace("ROUTE_TYPE_", "");
             const hPrefix = (pkt.packet_hash || "").substring(0, 16);
-
             const isAdv = (pkt.payload_type || "").includes("ADVERT");
-            const srcLabel = pkt.source_addr
-                ? (pkt.name ? `${pkt.source_addr} (${pkt.name})` : addrLabel(pkt.source_addr))
-                : "";
 
             if (hPrefix && feedByHash[hPrefix]) {
                 const group = feedByHash[hPrefix];
@@ -351,28 +375,33 @@ async function preloadFeed(count = 20) {
             }
 
             liveCount++;
-            const primaryHops = isAdv ? prependSourceToPath(pkt.hops || "", pkt, null) : (pkt.hops || "");
-            const hopsRich = buildHopsRichHtml(primaryHops);
-            const pd = pkt.decoded?.payload_details;
-            const payloadSummary = buildPayloadSummary(short, pd, pkt);
+            const label = activityLabel(pkt, short);
+            const icon = activityIcon(short);
+            const hops = (pkt.hops || "").split(",").filter(Boolean).length;
 
-            const entry = el("div", { class: "pkt-entry" });
+            const entry = el("div", { class: "activity-item" });
             entry.innerHTML = `
-                <div class="pkt-row1">
-                    <span class="pkt-time">${time}</span>
-                    <span class="pkt-type ${cls}">${short}</span>
-                    <span class="pkt-route">${route}</span>
-                    <span class="pkt-hops">${pkt.hop_count || 0}h</span>
-                    <span class="pkt-snr">${pkt.snr != null ? pkt.snr.toFixed(1) : "–"} dB</span>
+                <span class="activity-icon">${icon}</span>
+                <div class="activity-body">
+                    <div class="activity-label">${escHtml(label)}</div>
+                    <div class="activity-meta">${time} · ${hops}h</div>
                 </div>
-                <div class="pkt-row2 pkt-hop-trail">${hopsRich || "–"} ${srcLabel ? '<span class="pkt-src">← ' + escHtml(srcLabel) + "</span>" : ""}</div>
-                ${payloadSummary ? `<div class="pkt-row3">${payloadSummary}</div>` : ""}
+                <span class="activity-type ${cls}">${short}</span>
             `;
 
+            const primaryHops = isAdv ? prependSourceToPath(pkt.hops || "", pkt, null) : (pkt.hops || "");
+            const altPaths = pkt.alt_paths || [];
+            const rawPaths = [pkt.hops || ""];
+            for (const ap of altPaths) { if (ap && !rawPaths.includes(ap)) rawPaths.push(ap); }
+            const allPaths = isAdv ? rawPaths.map(p => prependSourceToPath(p, pkt, null)) : rawPaths;
+
             if (hPrefix) {
-                feedByHash[hPrefix] = { el: entry, paths: [primaryHops], count: 1, pkt, source_addr: pkt.source_addr || null, source_name: pkt.name || null };
+                feedByHash[hPrefix] = { el: entry, paths: [...allPaths], count: 1, pkt, source_addr: pkt.source_addr || null, source_name: pkt.name || null };
                 entry._hashPrefix = hPrefix;
             }
+            entry._pktData = pkt;
+            entry._group = feedByHash[hPrefix] || null;
+            entry.addEventListener("click", () => onFeedEntryClick(entry));
 
             if (feed.firstChild) feed.insertBefore(entry, feed.firstChild);
             else feed.appendChild(entry);
@@ -380,13 +409,12 @@ async function preloadFeed(count = 20) {
         $("#feedCount").textContent = liveCount.toLocaleString();
 
         // Show most recent drawable route on map
-        for (const pkt of data.packets) {
-            if (!pkt.time && pkt.received_at) pkt.time = pkt.received_at;
-            const hopsArr = (pkt.hops || "").split(",").map(a => a.trim().toLowerCase()).filter(Boolean);
-            if (hopsArr.length < 2) continue;
-            const segs = resolveHopSegments(hopsArr);
-            const coords = segs.flatMap(s => s.coords);
-            if (coords.length >= 2) { showRouteOnMap(pkt); break; }
+        if (feed.firstChild) {
+            const first = feed.firstChild;
+            if (first._pktData) {
+                showRouteOnMap(first._pktData, first._group);
+                markActiveFeedEntry(first);
+            }
         }
     } catch (e) { console.warn("Feed preload failed:", e); }
 }
@@ -733,18 +761,12 @@ function clearRoute() {
 
 // ── Init ────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", async () => {
-    $("#feedClear").addEventListener("click", () => {
-        $("#feedScroll").innerHTML = '<div class="feed-empty">Warte auf Pakete…</div>';
-        liveCount = 0;
-        $("#feedCount").textContent = "0";
-    });
-
     await loadAddressBook();
 
     initRouteMap();
     populateRepeaterMarkers();
 
-    await preloadFeed(20);
+    await preloadFeed(10);
     await loadInitialKPIs();
 
     connectWS();

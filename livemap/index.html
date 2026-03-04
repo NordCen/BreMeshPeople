@@ -48,10 +48,20 @@ layout: null
           <span id="mapRouteInfo" class="map-route-label">Warte auf Paket…</span>
         </div>
       </div>
-      <div id="routeMap" class="route-map"></div>
+      <div class="map-container">
+        <div id="routeMap" class="route-map"></div>
+        <!-- Activity feed overlay inside map -->
+        <div class="activity-overlay" id="activityOverlay">
+          <div class="activity-header">
+            <span class="activity-title">Letzte Aktivität</span>
+            <span class="activity-count" id="feedCount">0</span>
+          </div>
+          <div class="activity-list" id="feedScroll"></div>
+        </div>
+      </div>
     </div>
 
-    <!-- KPI + Feed below map -->
+    <!-- KPI strip below map -->
     <div class="below-map">
       <div class="kpi-row">
         <div class="kpi-card">
@@ -65,23 +75,6 @@ layout: null
         <div class="kpi-card">
           <div class="kpi-value" id="kpiHops">–</div>
           <div class="kpi-label">Ø Hops</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-value" id="feedCount">0</div>
-          <div class="kpi-label">Live Feed</div>
-        </div>
-      </div>
-
-      <div class="feed-section">
-        <div class="feed-heading">
-          <h3>Live Feed</h3>
-          <div class="feed-actions">
-            <label class="feed-action-label"><input type="checkbox" id="feedPause"> Pause</label>
-            <button class="feed-btn" id="feedClear">Leeren</button>
-          </div>
-        </div>
-        <div class="feed-scroll" id="feedScroll">
-          <div class="feed-empty">Warte auf Pakete…</div>
         </div>
       </div>
     </div>
