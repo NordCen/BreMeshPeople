@@ -4,43 +4,15 @@
    ================================================================ */
 
 /* ── Livemap-specific layout ─────────────────────────── */
-html, body {
-  height: 100%;
-  overflow: hidden;
-}
-body {
-  display: flex;
-  flex-direction: column;
-}
-.site-header {
-  position: relative !important;
-  flex-shrink: 0;
-}
 .livemap-main {
   padding: 0;
   max-width: none;
   border: 1px solid var(--line, #e6e6e6);
   border-top: none;
   margin: 0;
-  flex: 1 1 0%;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-.livemap-main .map-wrap {
-  flex: 1 1 0%;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-.livemap-main .map-container {
-  flex: 1 1 0%;
-  position: relative;
-  min-height: 0;
 }
 .site-footer {
   margin-top: 0;
-  flex-shrink: 0;
 }
 
 /* ── Map wrapper (full-width, dark) ──────────────────── */
@@ -109,10 +81,13 @@ body {
   50% { box-shadow: 0 0 10px #27ae60; }
 }
 
-/* Route map */
+/* Route map – header ~71px, toolbar ~37px, footer ~30px */
+.map-container {
+  position: relative;
+}
 .route-map {
-  position: absolute;
-  inset: 0;
+  height: calc(100vh - 140px);
+  min-height: 400px;
   background: #0d1117;
 }
 .route-map .leaflet-control-attribution {
