@@ -547,7 +547,6 @@ function showRouteOnMap(pkt, group) {
     clearRoute();
     routeHashPrefix = hPrefix;
     routePathLayers = [];
-    const gen = ++routeGeneration;  // capture generation for this draw
 
     // Dim all markers, activate involved ones
     for (const [, marker] of Object.entries(rptMarkerMap)) {
@@ -583,9 +582,9 @@ function showRouteOnMap(pkt, group) {
     if (boundsCoords.length < 2) return;
 
     const bounds = L.latLngBounds(boundsCoords).pad(0.12);
-    routeMap.once("moveend", () => {
-        if (gen !== routeGeneration) return;  // stale callback – skip
-        for (let pi = 0; pi < allPaths.length; pi++) {
+
+    // Draw polylines, markers, endpoints IMMEDIATELY (geo-referenced, always correct)
+    for (let pi = 0; pi < allPaths.length; pi++) {
             const pathHops = allPaths[pi].split(",").map(a => a.trim().toLowerCase());
             const pathSegments = resolveHopSegments(pathHops);
             if (pathSegments.length === 0) continue;
@@ -712,7 +711,9 @@ function showRouteOnMap(pkt, group) {
                 routeMarkers.push(L.marker([originInfo.lat, originInfo.lon], { icon: bIcon, interactive: false }).addTo(routeMap));
             }
         }
-    });
+    }
+
+    // Fly to bounds AFTER drawing (polylines are geo-referenced, always correct)
     routeMap.flyToBounds(bounds, { duration: 0.8, maxZoom: 16 });
 
     // Update info label
