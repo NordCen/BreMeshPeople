@@ -425,6 +425,7 @@ function initRouteMap() {
     }).addTo(routeMap);
 
     setTimeout(() => routeMap.invalidateSize(), 200);
+    setTimeout(() => routeMap.invalidateSize(), 600);
 }
 
 function populateRepeaterMarkers() {

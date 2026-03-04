@@ -12,30 +12,35 @@ body {
   display: flex;
   flex-direction: column;
 }
+.site-header {
+  position: relative !important;
+  flex-shrink: 0;
+}
 .livemap-main {
   padding: 0;
   max-width: none;
   border: 1px solid var(--line, #e6e6e6);
   border-top: none;
   margin: 0;
-  flex: 1;
+  flex: 1 1 0%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  min-height: 0;
 }
 .livemap-main .map-wrap {
-  flex: 1;
+  flex: 1 1 0%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  min-height: 0;
 }
 .livemap-main .map-container {
-  flex: 1;
+  flex: 1 1 0%;
   position: relative;
-  overflow: hidden;
+  min-height: 0;
 }
 .site-footer {
   margin-top: 0;
+  flex-shrink: 0;
 }
 
 /* ── Map wrapper (full-width, dark) ──────────────────── */
@@ -106,7 +111,8 @@ body {
 
 /* Route map */
 .route-map {
-  height: 100%;
+  position: absolute;
+  inset: 0;
   background: #0d1117;
 }
 .route-map .leaflet-control-attribution {
@@ -367,7 +373,6 @@ body {
   .map-toolbar { flex-direction: column; align-items: flex-start; gap: 4px; }
 }
 @media (max-width: 600px) {
-  .route-map { height: 100%; }
   .activity-overlay { width: 220px; bottom: 12px; left: 8px; }
   .map-toolbar-right { display: none; }
 }
