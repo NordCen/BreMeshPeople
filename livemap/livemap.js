@@ -425,7 +425,6 @@ function initRouteMap() {
     }).addTo(routeMap);
 
     setTimeout(() => routeMap.invalidateSize(), 200);
-    setTimeout(() => routeMap.invalidateSize(), 600);
 }
 
 function populateRepeaterMarkers() {
@@ -529,7 +528,7 @@ function showRouteOnMap(pkt, group) {
             .filter(l => l instanceof L.Polyline)
             .flatMap(l => l.getLatLngs());
         if (allCoords.length > 1) {
-            routeMap.fitBounds(L.latLngBounds(allCoords).pad(0.12), { maxZoom: 16 });
+            routeMap.flyToBounds(L.latLngBounds(allCoords).pad(0.12), { duration: 0.6, maxZoom: 16 });
         }
 
         const short = (pkt.payload_type || "").replace("PAYLOAD_TYPE_", "");
@@ -714,8 +713,8 @@ function showRouteOnMap(pkt, group) {
         }
     }
 
-    // Jump to bounds instantly (avoids rendering glitches during zoom animation)
-    routeMap.fitBounds(bounds, { maxZoom: 16 });
+    // Fly to bounds AFTER drawing (polylines are geo-referenced, always correct)
+    routeMap.flyToBounds(bounds, { duration: 0.8, maxZoom: 16 });
 
     // Update info label
     const short = (pkt.payload_type || "").replace("PAYLOAD_TYPE_", "");
