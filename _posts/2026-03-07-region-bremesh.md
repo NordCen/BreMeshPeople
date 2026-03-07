@@ -1,11 +1,11 @@
 ---
 layout: post
-title: "Bitte Region bremesh einstellen"
+title: "Repeater und Regionen - HowTo"
 date: 2026-03-07
 author: BreMesh Team
 ---
 
-Unser Netz wächst – und damit auch unsere Reichweite. Das ist grundsätzlich erfreulich, bringt aber ein Problem mit sich: **Unsere Pakete werden inzwischen weit über Bremen hinaus empfangen** und belasten dadurch andere Mesh-Netze.
+Unser Netz wächst – und damit auch unsere Reichweite. Das ist grundsätzlich erfreulich, bringt aber ein Problem mit sich: **Unsere Pakete werden inzwischen weit über Bremen hinaus empfangen** und belasten dadurch andere Mesh-Netze - als auch andere Mesh-Netze immer mehr zu uns durchdringen.
 
 Ein konkretes Beispiel: Auf dem **Brocken** musste ein Repeater das Weiterleiten von Paketen ohne gesetzte Region teilweise abschalten, weil zu viel Airtime verbraucht wurde.
 
@@ -58,3 +58,10 @@ Dort sollte `bremesh` mit einem `F` (Flood erlaubt) aufgelistet sein.
 | `region remove {name}` | Entfernt eine Region (nur wenn keine Kind-Regionen existieren) |
 
 > **Hinweis:** Companions, die nur mit Bremer Repeatern verbunden sind, müssen nicht umgestellt werden – aber es schadet auch nicht. Die Region-Befehle sind nur auf Repeatern verfügbar.
+
+## Optional: Andere Regionen hinzufügen
+
+Zum Thema "Wie sollen Regionen" benannt werden, gibt es zur Zeit Diskussionen im MeshCore Telegram Channel.
+
+Diese haben einen Vorschlag erarbeitet, wie Regionen konfiguriert werden könnten.
+Auch dieses kann jeder User für zu seinen Repeater-Regionen hinzufügen.
