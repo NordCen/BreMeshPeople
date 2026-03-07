@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Bitte Region „bremesh" einstellen"
+title: "Bitte Region bremesh einstellen"
 date: 2026-03-07
 author: BreMesh Team
 ---

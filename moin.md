@@ -14,16 +14,26 @@ permalink: /moin/
 2. **Region & Preset einstellen**  
    EU/UK (NARROW)
 
-3. **Kanal beitreten**  
+3. **Region „bremesh" setzen (Repeater)**  
+   Damit unsere Pakete lokal bleiben und andere Netze nicht belasten, bitte auf allen Bremer Repeatern die Region `bremesh` einstellen – per App (als Admin) oder per CLI:
+   ```
+   region put bremesh *
+   region allowf bremesh
+   region home bremesh
+   region save
+   ```
+   → Mehr Details im [News-Beitrag](/2026/03/07/region-bremesh/)
+
+4. **Kanal beitreten**  
    `Public`
 
-4. **Knoten platzieren**  
+5. **Knoten platzieren**  
    Möglichst hoch und frei (Dach, Balkon, Mast), kurze Koaxkabel, gute Antenne.
 
-5. **Testnachricht senden**  
-   Zum Beispiel: „Hallo aus Bremen!“
+6. **Testnachricht senden**  
+   Zum Beispiel: „Hallo aus Bremen!"
 
-6. **Reichweite testen (optional)**  
+7. **Reichweite testen (optional)**  
    Kanal `#Ping` – Bots antworten automatisch auf ping.
 
 <hr>
