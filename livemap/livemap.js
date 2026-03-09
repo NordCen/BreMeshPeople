@@ -190,7 +190,10 @@ function connectWS() {
         try {
             const msg = JSON.parse(ev.data);
             if (msg.type === "packet_ingested") onPacket(msg.data);
-            // ingestor_stats ignored (KPI removed)
+            if (msg.type === "client_count") {
+                const el = $("#wsClientCount");
+                if (el) el.textContent = msg.count;
+            }
         } catch (_) {}
     };
 }

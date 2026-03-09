@@ -86,7 +86,7 @@
   position: relative;
 }
 .route-map {
-  height: calc(100vh - 140px);
+  height: calc(100vh - 160px);
   min-height: 400px;
   background: #0d1117;
 }
@@ -270,6 +270,23 @@
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
   font-size: 0.62rem;
   color: rgba(208,212,220,0.4);
+}
+.ws-clients {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  font-size: 0.6rem;
+  color: rgba(208,212,220,0.5);
+}
+.ws-clients-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #27ae60;
+  box-shadow: 0 0 4px #27ae60;
 }
 .activity-list {
   max-height: 240px;
