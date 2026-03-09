@@ -61,6 +61,7 @@ Unsere Community baut eigene Hardware, Firmware, Apps und Infrastruktur rund um 
 | **[BreMesh Hardware](https://github.com/robrec/MeshCoreRepeater-RePeter)** | Kompaktes Repeater-PCB mit BMS, Solar und IP66-Gehäuse (~50 €) | Bartzi |
 | **[Telegram-Gruppe](https://t.me/meshhbuz)** | „Meshtastic Bremen und Umzu" – die Keimzelle der Community (seit 2024) | Heinrich |
 | **[FakeTec](/faketec/)** | DIY LoRa-Board im Heltec-Formfaktor (~15 €, selbst lötbar) | Community |
+| **[BreMesh MeshCore Bot](https://github.com/robrec/bremesh-meshcore-bot)** | Erweiterter MeshCore-Bot mit MQTT-Bridge und API-Anbindung an api.hbme.sh | Bartzi |
 | **[Matrix-Server](/matrix/)** | Eigener Matrix-Server für verschlüsselten Community-Chat | bjo |
 
 → **[Alle Community Builds im Detail](/community-builds/)**  

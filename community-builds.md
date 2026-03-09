@@ -76,6 +76,26 @@ Wer Interesse hat: **Frag einfach in unseren [Kommunikationskanälen](/community
 <hr>
 
 
+## Software
+
+### BreMesh MeshCore Bot
+
+Ein erweiterter Fork des [meshcore-bot](https://github.com/agessaman/meshcore-bot) von agessaman, angepasst für das BreMesh-Netz. Der Bot verbindet das Mesh-Netzwerk mit der BreMesh-Infrastruktur und bietet eine MQTT-Bridge sowie die Anbindung an die **api.hbme.sh**.
+
+**Features:**
+
+- **API-Anbindung:** Übermittelt empfangene Pakete an api.hbme.sh zur Auswertung auf der Website
+- **Telemetrie & Akkustand:** Akkustand und Telemetriedaten eigener Repeater via Web oder MQTT abrufbar
+- **MQTT-Bridge:** Entschlüsselte Mesh-Pakete werden per MQTT ausgeliefert – und über MQTT können auch Nachrichten ins Mesh gesendet werden
+
+- **Projekt:** [bremesh-meshcore-bot](https://github.com/robrec/bremesh-meshcore-bot)
+- **Basiert auf:** [meshcore-bot](https://github.com/agessaman/meshcore-bot) von agessaman
+- **Typ:** Software (Python / MQTT / MeshCore)
+- **Autor:** Bartzi
+
+<hr>
+
+
 ## Infrastruktur
 
 ### Matrix-Server
