@@ -481,7 +481,7 @@ function showRouteOnMap(pkt, group) {
     const resolvedAddrs = segments.flatMap(s => s.addrs);
     if (coords.length < 2) return;
 
-    // Multi-path: add to existing
+    // ── Multi-path: add to existing route ───────────────
     if (hPrefix && hPrefix === routeHashPrefix && group) {
         const pathIdx = group.paths.length - 1;
         const color = ROUTE_COLORS[pathIdx % ROUTE_COLORS.length];
@@ -508,21 +508,7 @@ function showRouteOnMap(pkt, group) {
             animLine();
         }
 
-        // Activate pulse on involved repeaters
-        for (const addr of resolvedAddrs) {
-            const marker = rptMarkerMap[addr];
-            if (!marker) continue;
-            const mel = marker.getElement();
-            if (!mel) continue;
-            const dot = mel.querySelector(".rpt-marker");
-            if (dot) {
-                dot.classList.add("rpt-active");
-                dot.classList.remove("rpt-dimmed");
-                dot.style.background = color;
-                dot.style.borderColor = color + "66";
-                dot.style.boxShadow = `0 0 6px ${color}`;
-            }
-        }
+        activateMarkers(resolvedAddrs, color);
 
         const allCoords = routeMarkers
             .filter(l => l instanceof L.Polyline)
@@ -543,12 +529,12 @@ function showRouteOnMap(pkt, group) {
         return;
     }
 
-    // New route – clear & draw
+    // ── New route – clear & draw ────────────────────────
     clearRoute();
     routeHashPrefix = hPrefix;
     routePathLayers = [];
 
-    // Dim all markers, activate involved ones
+    // Dim all markers
     for (const [, marker] of Object.entries(rptMarkerMap)) {
         const mel = marker.getElement();
         if (!mel) continue;
@@ -562,7 +548,7 @@ function showRouteOnMap(pkt, group) {
         }
     }
 
-    // Use group.paths (accumulated from WS) when available, else rebuild from pkt
+    // Build path list
     let allPaths;
     if (group && group.paths && group.paths.length > 0) {
         allPaths = [...group.paths];
@@ -572,69 +558,59 @@ function showRouteOnMap(pkt, group) {
         for (const ap of altPaths) { if (ap && !rawPaths.includes(ap)) rawPaths.push(ap); }
         allPaths = isAdvert ? rawPaths.map(p => prependSourceToPath(p, pkt, group)) : rawPaths;
     }
-    const boundsCoords = [];
 
+    // Compute bounds across all paths
+    const boundsCoords = [];
     for (const p of allPaths) {
         const pH = p.split(",").map(a => a.trim().toLowerCase());
         const segs = resolveHopSegments(pH);
         for (const s of segs) boundsCoords.push(...s.coords);
     }
     if (boundsCoords.length < 2) return;
-
     const bounds = L.latLngBounds(boundsCoords).pad(0.12);
 
-    // Draw polylines, markers, endpoints IMMEDIATELY (geo-referenced, always correct)
+    // ── Draw polylines & path labels ────────────────────
     for (let pi = 0; pi < allPaths.length; pi++) {
-            const pathHops = allPaths[pi].split(",").map(a => a.trim().toLowerCase());
-            const pathSegments = resolveHopSegments(pathHops);
-            if (pathSegments.length === 0) continue;
+        const pathHops = allPaths[pi].split(",").map(a => a.trim().toLowerCase());
+        const pathSegments = resolveHopSegments(pathHops);
+        if (pathSegments.length === 0) continue;
 
-            const color = ROUTE_COLORS[pi % ROUTE_COLORS.length];
+        const color = ROUTE_COLORS[pi % ROUTE_COLORS.length];
 
-            for (const seg of pathSegments) {
-                for (const addr of seg.addrs) {
-                    const marker = rptMarkerMap[addr];
-                    if (!marker) continue;
-                    const mel = marker.getElement();
-                    if (!mel) continue;
-                    const dot = mel.querySelector(".rpt-marker");
-                    if (dot) {
-                        dot.classList.add("rpt-active");
-                        dot.classList.remove("rpt-dimmed");
-                        dot.style.background = color;
-                        dot.style.borderColor = color + "66";
-                        dot.style.boxShadow = `0 0 6px ${color}`;
-                    }
-                }
-            }
+        // Activate repeater markers along this path
+        for (const seg of pathSegments) {
+            activateMarkers(seg.addrs, color);
+        }
 
-            for (const seg of pathSegments) {
-                const glow = L.polyline(seg.coords, {
-                    color, weight: 8, opacity: 0.2,
-                    lineCap: "round", lineJoin: "round", interactive: false,
-                }).addTo(routeMap);
-                routeMarkers.push(glow);
+        // Draw glow + animated line
+        for (const seg of pathSegments) {
+            const glow = L.polyline(seg.coords, {
+                color, weight: 8, opacity: 0.2,
+                lineCap: "round", lineJoin: "round", interactive: false,
+            }).addTo(routeMap);
+            routeMarkers.push(glow);
 
-                const line = L.polyline(seg.coords, {
-                    color, weight: 3, opacity: 0.85,
-                    lineCap: "round", lineJoin: "round",
-                    dashArray: "8 6", interactive: false,
-                }).addTo(routeMap);
-                routeMarkers.push(line);
-                routePathLayers.push({ polyline: line, glow });
+            const line = L.polyline(seg.coords, {
+                color, weight: 3, opacity: 0.85,
+                lineCap: "round", lineJoin: "round",
+                dashArray: "8 6", interactive: false,
+            }).addTo(routeMap);
+            routeMarkers.push(line);
+            routePathLayers.push({ polyline: line, glow });
 
-                let offset = 0;
-                const animLine = () => {
-                    offset -= 0.5;
-                    if (line && line._path) line._path.style.strokeDashoffset = offset;
-                    line._animFrame = requestAnimationFrame(animLine);
-                };
-                animLine();
-            }
+            let offset = 0;
+            const animLine = () => {
+                offset -= 0.5;
+                if (line && line._path) line._path.style.strokeDashoffset = offset;
+                line._animFrame = requestAnimationFrame(animLine);
+            };
+            animLine();
+        }
 
-            // Path labels for multi-path
+        // Path number labels for multi-path routes
+        if (allPaths.length > 1) {
             const allPathCoords = pathSegments.flatMap(s => s.coords);
-            if (allPaths.length > 1 && allPathCoords.length >= 2) {
+            if (allPathCoords.length >= 2) {
                 const midIdx = Math.floor(allPathCoords.length / 2);
                 const pathLabel = L.divIcon({
                     className: "route-path-label-wrap",
@@ -644,79 +620,79 @@ function showRouteOnMap(pkt, group) {
                 routeMarkers.push(L.marker(allPathCoords[midIdx], { icon: pathLabel, interactive: false }).addTo(routeMap));
             }
         }
+    }
 
-        // Endpoint markers
-        if (isAdvert && sourceAddr) {
-            const srcInfo = addressBook[sourceAddr];
-            if (srcInfo && srcInfo.lat != null && srcInfo.lon != null) {
-                const starIcon = L.divIcon({
-                    className: "route-star-wrap",
-                    html: `<div class="route-star-center" title="${escHtml(sourceName || sourceAddr)}">⭐</div>`,
-                    iconSize: [28, 28], iconAnchor: [14, 14],
-                });
-                routeMarkers.push(L.marker([srcInfo.lat, srcInfo.lon], { icon: starIcon, interactive: false }).addTo(routeMap));
-            }
-            const seenRx = new Set();
-            for (let pi = 0; pi < allPaths.length; pi++) {
-                const pH = allPaths[pi].split(",").map(a => a.trim().toLowerCase());
-                const lastA = pH[pH.length - 1];
-                if (seenRx.has(lastA)) continue;
-                seenRx.add(lastA);
-                const rxInfo = addressBook[lastA];
-                if (rxInfo && rxInfo.lat != null && rxInfo.lon != null) {
-                    const rxColor = ROUTE_COLORS[pi % ROUTE_COLORS.length];
-                    const rxName = rxInfo.name || lastA;
-                    const rxIcon = L.divIcon({
-                        className: "route-endpoint-wrap",
-                        html: `<div class="route-endpoint route-rx" title="${escHtml(rxName)}" style="border-color:${rxColor}">📥</div>`,
-                        iconSize: [20, 20], iconAnchor: [10, 10],
-                    });
-                    routeMarkers.push(L.marker([rxInfo.lat, rxInfo.lon], { icon: rxIcon, interactive: false }).addTo(routeMap));
-                }
-            }
-        } else {
-            if (coords.length >= 1) {
-                const srcIcon = L.divIcon({
+    // ── Endpoint markers ────────────────────────────────
+    if (isAdvert && sourceAddr) {
+        const srcInfo = addressBook[sourceAddr];
+        if (srcInfo && srcInfo.lat != null && srcInfo.lon != null) {
+            const starIcon = L.divIcon({
+                className: "route-star-wrap",
+                html: `<div class="route-star-center" title="${escHtml(sourceName || sourceAddr)}">⭐</div>`,
+                iconSize: [28, 28], iconAnchor: [14, 14],
+            });
+            routeMarkers.push(L.marker([srcInfo.lat, srcInfo.lon], { icon: starIcon, interactive: false }).addTo(routeMap));
+        }
+        const seenRx = new Set();
+        for (let pi = 0; pi < allPaths.length; pi++) {
+            const pH = allPaths[pi].split(",").map(a => a.trim().toLowerCase());
+            const lastA = pH[pH.length - 1];
+            if (seenRx.has(lastA)) continue;
+            seenRx.add(lastA);
+            const rxInfo = addressBook[lastA];
+            if (rxInfo && rxInfo.lat != null && rxInfo.lon != null) {
+                const rxColor = ROUTE_COLORS[pi % ROUTE_COLORS.length];
+                const rxName = rxInfo.name || lastA;
+                const rxIcon = L.divIcon({
                     className: "route-endpoint-wrap",
-                    html: `<div class="route-endpoint route-src">📡</div>`,
-                    iconSize: [18, 18], iconAnchor: [9, 9],
+                    html: `<div class="route-endpoint route-rx" title="${escHtml(rxName)}" style="border-color:${rxColor}">📥</div>`,
+                    iconSize: [20, 20], iconAnchor: [10, 10],
                 });
-                routeMarkers.push(L.marker(coords[0], { icon: srcIcon, interactive: false }).addTo(routeMap));
-            }
-            if (coords.length > 1) {
-                const dstIcon = L.divIcon({
-                    className: "route-endpoint-wrap",
-                    html: `<div class="route-endpoint route-dst">📥</div>`,
-                    iconSize: [18, 18], iconAnchor: [9, 9],
-                });
-                routeMarkers.push(L.marker(coords[coords.length - 1], { icon: dstIcon, interactive: false }).addTo(routeMap));
+                routeMarkers.push(L.marker([rxInfo.lat, rxInfo.lon], { icon: rxIcon, interactive: false }).addTo(routeMap));
             }
         }
-
-        // Speech bubble for public GRP_TXT
-        const _pd = pkt.decoded?.payload_details;
-        if (_pd && _pd.type === "GRP_TXT" && _pd.decrypted === true && _pd.text) {
-            const originAddr = hops[0] || sourceAddr;
-            const originInfo = originAddr ? addressBook[originAddr] : null;
-            if (originInfo && originInfo.lat != null && originInfo.lon != null) {
-                let bHtml = "";
-                if (_pd.sender) bHtml += `<div class="detail-speech-sender">${escHtml(_pd.sender)}</div>`;
-                bHtml += `<div class="detail-speech-text">${escHtml(_pd.text)}</div>`;
-                if (_pd.channel_name) bHtml += `<div class="detail-speech-channel">#${escHtml(_pd.channel_name)}</div>`;
-                const bIcon = L.divIcon({
-                    className: "detail-speech-wrap",
-                    html: `<div class="detail-speech-bubble">${bHtml}</div>`,
-                    iconSize: [200, 80], iconAnchor: [100, 84],
-                });
-                routeMarkers.push(L.marker([originInfo.lat, originInfo.lon], { icon: bIcon, interactive: false }).addTo(routeMap));
-            }
+    } else {
+        if (coords.length >= 1) {
+            const srcIcon = L.divIcon({
+                className: "route-endpoint-wrap",
+                html: `<div class="route-endpoint route-src">📡</div>`,
+                iconSize: [18, 18], iconAnchor: [9, 9],
+            });
+            routeMarkers.push(L.marker(coords[0], { icon: srcIcon, interactive: false }).addTo(routeMap));
+        }
+        if (coords.length > 1) {
+            const dstIcon = L.divIcon({
+                className: "route-endpoint-wrap",
+                html: `<div class="route-endpoint route-dst">📥</div>`,
+                iconSize: [18, 18], iconAnchor: [9, 9],
+            });
+            routeMarkers.push(L.marker(coords[coords.length - 1], { icon: dstIcon, interactive: false }).addTo(routeMap));
         }
     }
 
-    // Fly to bounds AFTER drawing (polylines are geo-referenced, always correct)
+    // ── Speech bubble for public GRP_TXT ────────────────
+    const _pd = pkt.decoded && pkt.decoded.payload_details;
+    if (_pd && _pd.type === "GRP_TXT" && _pd.decrypted === true && _pd.text) {
+        const originAddr = hops[0] || sourceAddr;
+        const originInfo = originAddr ? addressBook[originAddr] : null;
+        if (originInfo && originInfo.lat != null && originInfo.lon != null) {
+            let bHtml = "";
+            if (_pd.sender) bHtml += `<div class="detail-speech-sender">${escHtml(_pd.sender)}</div>`;
+            bHtml += `<div class="detail-speech-text">${escHtml(_pd.text)}</div>`;
+            if (_pd.channel_name) bHtml += `<div class="detail-speech-channel">#${escHtml(_pd.channel_name)}</div>`;
+            const bIcon = L.divIcon({
+                className: "detail-speech-wrap",
+                html: `<div class="detail-speech-bubble">${bHtml}</div>`,
+                iconSize: [200, 80], iconAnchor: [100, 84],
+            });
+            routeMarkers.push(L.marker([originInfo.lat, originInfo.lon], { icon: bIcon, interactive: false }).addTo(routeMap));
+        }
+    }
+
+    // ── Fly to bounds ───────────────────────────────────
     routeMap.flyToBounds(bounds, { duration: 0.8, maxZoom: 16 });
 
-    // Update info label
+    // ── Update info label ───────────────────────────────
     const short = (pkt.payload_type || "").replace("PAYLOAD_TYPE_", "");
     const hopNames = resolvedAddrs.map(a => addrName(a) || a);
     const infoEl = $("#mapRouteInfo");
@@ -730,7 +706,7 @@ function showRouteOnMap(pkt, group) {
         }
     }
 
-    // Auto-fade pulse after 15s
+    // ── Auto-fade pulse after 15s ───────────────────────
     if (routeFadeTimer) clearTimeout(routeFadeTimer);
     routeFadeTimer = setTimeout(() => {
         for (const [, marker] of Object.entries(rptMarkerMap)) {
@@ -740,6 +716,23 @@ function showRouteOnMap(pkt, group) {
             if (dot) { dot.classList.remove("rpt-active"); dot.style.boxShadow = ""; }
         }
     }, 15000);
+}
+
+function activateMarkers(addrs, color) {
+    for (const addr of addrs) {
+        const marker = rptMarkerMap[addr];
+        if (!marker) continue;
+        const mel = marker.getElement();
+        if (!mel) continue;
+        const dot = mel.querySelector(".rpt-marker");
+        if (dot) {
+            dot.classList.add("rpt-active");
+            dot.classList.remove("rpt-dimmed");
+            dot.style.background = color;
+            dot.style.borderColor = color + "66";
+            dot.style.boxShadow = `0 0 6px ${color}`;
+        }
+    }
 }
 
 function clearRoute() {
