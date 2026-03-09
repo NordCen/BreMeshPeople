@@ -205,7 +205,8 @@ function connectWS() {
 function pktHasRoute(pkt) {
     const isAdv = (pkt.payload_type || "").includes("ADVERT");
     const hopsStr = isAdv ? prependSourceToPath(pkt.hops || "", pkt, null) : (pkt.hops || "");
-    const hops = hopsStr ? hopsStr.split(",").map(a => a.trim().toLowerCase()).filter(Boolean) : [];
+    let hops = hopsStr ? hopsStr.split(",").map(a => a.trim().toLowerCase()).filter(Boolean) : [];
+    hops = trimGatewayHops(hops);
     if (hops.length < 3) return false;
     const segs = resolveHopSegments(hops);
     return segs.some(s => s.coords.length >= 3);
@@ -454,6 +455,19 @@ function populateRepeaterMarkers() {
     }
 }
 
+// Strip hops before a known gateway pattern (e.g. *->96->bd->*)
+const GATEWAY_PATTERNS = [["96", "bd"]]; // [entry, exit] pairs
+function trimGatewayHops(hops) {
+    for (const [entry, exit] of GATEWAY_PATTERNS) {
+        for (let i = 0; i < hops.length - 1; i++) {
+            if (hops[i].startsWith(entry) && hops[i + 1].startsWith(exit)) {
+                return hops.slice(i);
+            }
+        }
+    }
+    return hops;
+}
+
 function resolveHopSegments(hops) {
     const segments = [];
     let cur = { coords: [], addrs: [] };
@@ -478,7 +492,8 @@ function showRouteOnMap(pkt, group) {
     const sourceName = pkt.name || (group && group.source_name) || "";
 
     const hopsStr = isAdvert ? prependSourceToPath(pkt.hops, pkt, group) : (pkt.hops || "");
-    const hops = hopsStr ? hopsStr.split(",").map(a => a.trim().toLowerCase()) : [];
+    let hops = hopsStr ? hopsStr.split(",").map(a => a.trim().toLowerCase()) : [];
+    hops = trimGatewayHops(hops);
     if (hops.length < 3) return;
 
     const hPrefix = pkt.hash_prefix || (pkt.packet_hash || "").substring(0, 16);
@@ -550,7 +565,7 @@ function showRouteOnMap(pkt, group) {
     // Compute bounds across all paths
     const boundsCoords = [];
     for (const p of allPaths) {
-        const pH = p.split(",").map(a => a.trim().toLowerCase());
+        const pH = trimGatewayHops(p.split(",").map(a => a.trim().toLowerCase()));
         const segs = resolveHopSegments(pH);
         for (const s of segs) boundsCoords.push(...s.coords);
     }
@@ -559,7 +574,7 @@ function showRouteOnMap(pkt, group) {
 
     // ── Draw polylines per hop (colored by hop index) ───
     for (let pi = 0; pi < allPaths.length; pi++) {
-        const pathHops = allPaths[pi].split(",").map(a => a.trim().toLowerCase());
+        const pathHops = trimGatewayHops(allPaths[pi].split(",").map(a => a.trim().toLowerCase()));
         const pathSegments = resolveHopSegments(pathHops);
         if (pathSegments.length === 0) continue;
 
@@ -589,7 +604,7 @@ function showRouteOnMap(pkt, group) {
         }
         const seenRx = new Set();
         for (let pi = 0; pi < allPaths.length; pi++) {
-            const pH = allPaths[pi].split(",").map(a => a.trim().toLowerCase());
+            const pH = trimGatewayHops(allPaths[pi].split(",").map(a => a.trim().toLowerCase()));
             const lastA = pH[pH.length - 1];
             if (seenRx.has(lastA)) continue;
             seenRx.add(lastA);
