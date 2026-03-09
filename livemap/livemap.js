@@ -415,7 +415,7 @@ function initRouteMap() {
 
     routeMap = L.map(mapEl, {
         center: [53.04, 8.82],
-        zoom: 10,
+        zoom: 11,
         zoomControl: false,
         scrollWheelZoom: true,
         doubleClickZoom: true,
