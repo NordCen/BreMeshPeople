@@ -213,7 +213,7 @@
 /* Speech bubble */
 .detail-speech-wrap { z-index: 950 !important; background: none !important; border: none !important; pointer-events: none !important; }
 .detail-speech-bubble {
-  background: rgba(25, 29, 40, 0.88);
+  background: rgba(25, 29, 40, 0.55);
   border: 1px solid #27ae60;
   border-radius: 8px;
   padding: 5px 8px;
