@@ -412,9 +412,12 @@ function initRouteMap() {
     if (!mapEl) return;
 
     routeMap = L.map(mapEl, {
-        center: [53.0847, 8.8024],
-        zoom: 12,
-        zoomControl: true,
+        center: [53.04, 8.82],
+        zoom: 10,
+        zoomControl: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        dragging: true,
         attributionControl: true,
     });
 
@@ -514,7 +517,7 @@ function showRouteOnMap(pkt, group) {
             .filter(l => l instanceof L.Polyline)
             .flatMap(l => l.getLatLngs());
         if (allCoords.length > 1) {
-            routeMap.flyToBounds(L.latLngBounds(allCoords).pad(0.12), { duration: 0.6, maxZoom: 16 });
+            routeMap.panTo(L.latLngBounds(allCoords).pad(0.12).getCenter(), { duration: 0.6 });
         }
 
         const short = (pkt.payload_type || "").replace("PAYLOAD_TYPE_", "");
@@ -690,7 +693,7 @@ function showRouteOnMap(pkt, group) {
     }
 
     // ── Fly to bounds ───────────────────────────────────
-    routeMap.flyToBounds(bounds, { duration: 0.8, maxZoom: 16 });
+    routeMap.panTo(bounds.getCenter(), { duration: 0.8 });
 
     // ── Update info label ───────────────────────────────
     const short = (pkt.payload_type || "").replace("PAYLOAD_TYPE_", "");
