@@ -661,7 +661,7 @@ function showRouteOnMap(pkt, group) {
             const bIcon = L.divIcon({
                 className: "detail-speech-wrap",
                 html: `<div class="detail-speech-bubble">${bHtml}</div>`,
-                iconSize: [200, 80], iconAnchor: [100, 84],
+                iconSize: [180, 70], iconAnchor: [-12, 70],
             });
             routeMarkers.push(L.marker([originInfo.lat, originInfo.lon], { icon: bIcon, interactive: false, pane: "bubbles" }).addTo(routeMap));
         }
