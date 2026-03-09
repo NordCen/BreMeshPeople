@@ -417,8 +417,8 @@ function initRouteMap() {
         center: [53.04, 8.82],
         zoom: 10,
         zoomControl: false,
-        scrollWheelZoom: false,
-        doubleClickZoom: false,
+        scrollWheelZoom: true,
+        doubleClickZoom: true,
         dragging: true,
         attributionControl: true,
     });
