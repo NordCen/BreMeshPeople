@@ -202,9 +202,9 @@ function pktHasRoute(pkt) {
     const isAdv = (pkt.payload_type || "").includes("ADVERT");
     const hopsStr = isAdv ? prependSourceToPath(pkt.hops || "", pkt, null) : (pkt.hops || "");
     const hops = hopsStr ? hopsStr.split(",").map(a => a.trim().toLowerCase()).filter(Boolean) : [];
-    if (hops.length < 2) return false;
+    if (hops.length < 3) return false;
     const segs = resolveHopSegments(hops);
-    return segs.flatMap(s => s.coords).length >= 2;
+    return segs.some(s => s.coords.length >= 3);
 }
 
 function activityIcon(short) {
@@ -475,14 +475,14 @@ function showRouteOnMap(pkt, group) {
 
     const hopsStr = isAdvert ? prependSourceToPath(pkt.hops, pkt, group) : (pkt.hops || "");
     const hops = hopsStr ? hopsStr.split(",").map(a => a.trim().toLowerCase()) : [];
-    if (hops.length < 2) return;
+    if (hops.length < 3) return;
 
     const hPrefix = pkt.hash_prefix || (pkt.packet_hash || "").substring(0, 16);
 
     const segments = resolveHopSegments(hops);
     const coords = segments.flatMap(s => s.coords);
     const resolvedAddrs = segments.flatMap(s => s.addrs);
-    if (coords.length < 2) return;
+    if (coords.length < 3) return;
 
     // ── Multi-path: add to existing route ───────────────
     if (hPrefix && hPrefix === routeHashPrefix && group) {
