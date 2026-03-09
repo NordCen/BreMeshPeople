@@ -13,11 +13,9 @@ const LIVE_MAX = 5;
 
 // Hop-distance color gradient: green (hop 0) → red (hop 7+)
 function hopColor(hopIdx) {
-    const t = Math.min(hopIdx / 7, 1); // 0..1 over first 8 hops
-    const r = Math.round(46 + t * (231 - 46));   // 2e → e7
-    const g = Math.round(204 - t * (204 - 76));  // cc → 4c
-    const b = Math.round(113 - t * (113 - 60));  // 71 → 3c
-    return `rgb(${r},${g},${b})`;
+    const t = Math.min(hopIdx / 7, 1);  // 0 → 1 over hops 0…7
+    const hue = 120 - t * 120;          // 120° (green) → 0° (red)
+    return `hsl(${Math.round(hue)}, 90%, 50%)`;
 }
 const TYPE_CLASSES = {
     ADVERT: "type-advert", TXT_MSG: "type-txt", GRP_TXT: "type-grp",
@@ -134,11 +132,7 @@ function buildPayloadSummary(short, pd, pkt) {
             return parts.length ? `<span class="feed-icon">📡</span> ${parts.join(" · ")}` : "";
         }
         case "TXT_MSG":
-            if (pd.text && isEncryptedDM(pd.text))
-                return `<span class="feed-icon">💬</span> <span class="feed-locked">🔒 DM (verschlüsselt)</span>`;
-            return pd.text
-                ? `<span class="feed-icon">💬</span> <span class="feed-msg">${escHtml(pd.text.substring(0, 120))}</span>`
-                : "";
+            return `<span class="feed-icon">💬</span> <span class="feed-locked">🔒 DM (verschlüsselt)</span>`;
         case "GRP_TXT": {
             let line = `<span class="feed-icon">📢</span>`;
             if (pd.decrypted === true) line += `<span class="feed-badge-dec">🔓</span>`;
@@ -233,8 +227,8 @@ function activityLabel(pkt, short) {
         const sender = pd.sender ? `${pd.sender}: ` : "";
         return sender + pd.text.substring(0, 60);
     }
-    if (short === "TXT_MSG" && pd?.text) {
-        return pd.text.substring(0, 60);
+    if (short === "TXT_MSG") {
+        return "DM (verschlüsselt)";
     }
     const hops = (pkt.hops || "").split(",").map(a => a.trim()).filter(Boolean);
     const firstHop = hops[0] ? (addrName(hops[0]) || hops[0]) : "";
@@ -687,19 +681,19 @@ function showRouteOnMap(pkt, group) {
     }, 15000);
 }
 
-// Draw individual hop segments with per-hop coloring
+// Draw individual hop segments with per-hop coloring (matching BIA dashboard)
 function drawHopSegments(seg, hopOffset) {
     for (let i = 0; i < seg.coords.length - 1; i++) {
         const color = hopColor(hopOffset + i);
         const pair = [seg.coords[i], seg.coords[i + 1]];
         const glow = L.polyline(pair, {
-            color, weight: 8, opacity: 0.2,
+            color, weight: 6, opacity: 0.15,
             lineCap: "round", lineJoin: "round", interactive: false,
         }).addTo(routeMap);
         routeMarkers.push(glow);
 
         const line = L.polyline(pair, {
-            color, weight: 3, opacity: 0.85,
+            color, weight: 2.5, opacity: 0.7,
             lineCap: "round", lineJoin: "round",
             dashArray: "8 6", interactive: false,
         }).addTo(routeMap);
@@ -716,9 +710,15 @@ function drawHopSegments(seg, hopOffset) {
     }
 }
 
-// Activate repeater markers with hop-based coloring
+// Activate repeater markers with hop-based coloring (skip isolated nodes)
 function activateMarkersByHop(addrs) {
     for (let i = 0; i < addrs.length; i++) {
+        const cur = addressBook[addrs[i]];
+        if (!cur || cur.lat == null) continue;
+        const prev = i > 0 ? addressBook[addrs[i - 1]] : null;
+        const next = i < addrs.length - 1 ? addressBook[addrs[i + 1]] : null;
+        if (!(prev && prev.lat != null) && !(next && next.lat != null)) continue;
+
         const color = hopColor(i);
         const marker = rptMarkerMap[addrs[i]];
         if (!marker) continue;
@@ -729,7 +729,7 @@ function activateMarkersByHop(addrs) {
             dot.classList.add("rpt-active");
             dot.classList.remove("rpt-dimmed");
             dot.style.background = color;
-            dot.style.borderColor = color + "66";
+            dot.style.borderColor = color;
             dot.style.boxShadow = `0 0 6px ${color}`;
         }
     }
