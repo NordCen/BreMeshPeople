@@ -11,10 +11,14 @@ const WS_URL = "wss://api.hbme.sh/ws/public";
 const API_BASE = "https://api.hbme.sh/api/public";
 const LIVE_MAX = 5;
 
-const ROUTE_COLORS = [
-    "#3498db", "#2ecc71", "#e74c3c", "#f39c12", "#9b59b6",
-    "#1abc9c", "#e67e22", "#e84393", "#00cec9", "#fd79a8",
-];
+// Hop-distance color gradient: green (hop 0) → red (hop 7+)
+function hopColor(hopIdx) {
+    const t = Math.min(hopIdx / 7, 1); // 0..1 over first 8 hops
+    const r = Math.round(46 + t * (231 - 46));   // 2e → e7
+    const g = Math.round(204 - t * (204 - 76));  // cc → 4c
+    const b = Math.round(113 - t * (113 - 60));  // 71 → 3c
+    return `rgb(${r},${g},${b})`;
+}
 const TYPE_CLASSES = {
     ADVERT: "type-advert", TXT_MSG: "type-txt", GRP_TXT: "type-grp",
     ACK: "type-ack", REQ: "type-req", RESPONSE: "type-response",
@@ -486,32 +490,13 @@ function showRouteOnMap(pkt, group) {
 
     // ── Multi-path: add to existing route ───────────────
     if (hPrefix && hPrefix === routeHashPrefix && group) {
-        const pathIdx = group.paths.length - 1;
-        const color = ROUTE_COLORS[pathIdx % ROUTE_COLORS.length];
-
+        let hopOff = 0;
         for (const seg of segments) {
-            const glow = L.polyline(seg.coords, {
-                color, weight: 8, opacity: 0.2,
-                lineCap: "round", lineJoin: "round", interactive: false,
-            }).addTo(routeMap);
-            const line = L.polyline(seg.coords, {
-                color, weight: 3, opacity: 0.85,
-                lineCap: "round", lineJoin: "round",
-                dashArray: "8 6", interactive: false,
-            }).addTo(routeMap);
-            routeMarkers.push(glow, line);
-            routePathLayers.push({ polyline: line, glow });
-
-            let offset = 0;
-            const animLine = () => {
-                offset -= 0.5;
-                if (line && line._path) line._path.style.strokeDashoffset = offset;
-                line._animFrame = requestAnimationFrame(animLine);
-            };
-            animLine();
+            drawHopSegments(seg, hopOff);
+            hopOff += Math.max(seg.coords.length - 1, 0);
         }
 
-        activateMarkers(resolvedAddrs, color);
+        activateMarkersByHop(resolvedAddrs);
 
         const allCoords = routeMarkers
             .filter(l => l instanceof L.Polyline)
@@ -572,56 +557,22 @@ function showRouteOnMap(pkt, group) {
     if (boundsCoords.length < 2) return;
     const bounds = L.latLngBounds(boundsCoords).pad(0.12);
 
-    // ── Draw polylines & path labels ────────────────────
+    // ── Draw polylines per hop (colored by hop index) ───
     for (let pi = 0; pi < allPaths.length; pi++) {
         const pathHops = allPaths[pi].split(",").map(a => a.trim().toLowerCase());
         const pathSegments = resolveHopSegments(pathHops);
         if (pathSegments.length === 0) continue;
 
-        const color = ROUTE_COLORS[pi % ROUTE_COLORS.length];
-
         // Activate repeater markers along this path
         for (const seg of pathSegments) {
-            activateMarkers(seg.addrs, color);
+            activateMarkersByHop(seg.addrs);
         }
 
-        // Draw glow + animated line
+        // Draw each hop as individual segment with hop-based color
+        let hopOff = 0;
         for (const seg of pathSegments) {
-            const glow = L.polyline(seg.coords, {
-                color, weight: 8, opacity: 0.2,
-                lineCap: "round", lineJoin: "round", interactive: false,
-            }).addTo(routeMap);
-            routeMarkers.push(glow);
-
-            const line = L.polyline(seg.coords, {
-                color, weight: 3, opacity: 0.85,
-                lineCap: "round", lineJoin: "round",
-                dashArray: "8 6", interactive: false,
-            }).addTo(routeMap);
-            routeMarkers.push(line);
-            routePathLayers.push({ polyline: line, glow });
-
-            let offset = 0;
-            const animLine = () => {
-                offset -= 0.5;
-                if (line && line._path) line._path.style.strokeDashoffset = offset;
-                line._animFrame = requestAnimationFrame(animLine);
-            };
-            animLine();
-        }
-
-        // Path number labels for multi-path routes
-        if (allPaths.length > 1) {
-            const allPathCoords = pathSegments.flatMap(s => s.coords);
-            if (allPathCoords.length >= 2) {
-                const midIdx = Math.floor(allPathCoords.length / 2);
-                const pathLabel = L.divIcon({
-                    className: "route-path-label-wrap",
-                    html: `<div class="route-path-label" style="background:${color}">${pi + 1}</div>`,
-                    iconSize: [20, 20], iconAnchor: [10, 10],
-                });
-                routeMarkers.push(L.marker(allPathCoords[midIdx], { icon: pathLabel, interactive: false }).addTo(routeMap));
-            }
+            drawHopSegments(seg, hopOff);
+            hopOff += Math.max(seg.coords.length - 1, 0);
         }
     }
 
@@ -644,7 +595,7 @@ function showRouteOnMap(pkt, group) {
             seenRx.add(lastA);
             const rxInfo = addressBook[lastA];
             if (rxInfo && rxInfo.lat != null && rxInfo.lon != null) {
-                const rxColor = ROUTE_COLORS[pi % ROUTE_COLORS.length];
+                const rxColor = hopColor(pH.length - 1);
                 const rxName = rxInfo.name || lastA;
                 const rxIcon = L.divIcon({
                     className: "route-endpoint-wrap",
@@ -721,9 +672,40 @@ function showRouteOnMap(pkt, group) {
     }, 15000);
 }
 
-function activateMarkers(addrs, color) {
-    for (const addr of addrs) {
-        const marker = rptMarkerMap[addr];
+// Draw individual hop segments with per-hop coloring
+function drawHopSegments(seg, hopOffset) {
+    for (let i = 0; i < seg.coords.length - 1; i++) {
+        const color = hopColor(hopOffset + i);
+        const pair = [seg.coords[i], seg.coords[i + 1]];
+        const glow = L.polyline(pair, {
+            color, weight: 8, opacity: 0.2,
+            lineCap: "round", lineJoin: "round", interactive: false,
+        }).addTo(routeMap);
+        routeMarkers.push(glow);
+
+        const line = L.polyline(pair, {
+            color, weight: 3, opacity: 0.85,
+            lineCap: "round", lineJoin: "round",
+            dashArray: "8 6", interactive: false,
+        }).addTo(routeMap);
+        routeMarkers.push(line);
+        routePathLayers.push({ polyline: line, glow });
+
+        let offset = 0;
+        const animLine = () => {
+            offset -= 0.5;
+            if (line && line._path) line._path.style.strokeDashoffset = offset;
+            line._animFrame = requestAnimationFrame(animLine);
+        };
+        animLine();
+    }
+}
+
+// Activate repeater markers with hop-based coloring
+function activateMarkersByHop(addrs) {
+    for (let i = 0; i < addrs.length; i++) {
+        const color = hopColor(i);
+        const marker = rptMarkerMap[addrs[i]];
         if (!marker) continue;
         const mel = marker.getElement();
         if (!mel) continue;
