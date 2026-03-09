@@ -132,7 +132,7 @@ function buildPayloadSummary(short, pd, pkt) {
             return parts.length ? `<span class="feed-icon">📡</span> ${parts.join(" · ")}` : "";
         }
         case "TXT_MSG":
-            return `<span class="feed-icon">💬</span> <span class="feed-locked">🔒 DM (verschlüsselt)</span>`;
+            return `<span class="feed-icon">✉️</span> <span class="feed-locked">🔒 DM (verschlüsselt)</span>`;
         case "GRP_TXT": {
             let line = `<span class="feed-icon">📢</span>`;
             if (pd.decrypted === true) line += `<span class="feed-badge-dec">🔓</span>`;
@@ -212,7 +212,7 @@ function pktHasRoute(pkt) {
 function activityIcon(short) {
     switch (short) {
         case "ADVERT": return "📡";
-        case "TXT_MSG": return "💬";
+        case "TXT_MSG": return "✉️";
         case "GRP_TXT": return "📢";
         case "ACK": return "✓";
         case "TRACE": return "🔍";
@@ -423,6 +423,12 @@ function initRouteMap() {
         attributionControl: true,
     });
 
+    // Custom panes for z-ordering: lines < repeaters < endpoints < bubbles
+    routeMap.createPane("routeLines").style.zIndex = 410;
+    routeMap.createPane("repeaters").style.zIndex = 420;
+    routeMap.createPane("endpoints").style.zIndex = 430;
+    routeMap.createPane("bubbles").style.zIndex = 440;
+
     L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
         maxZoom: 19,
         attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
@@ -445,7 +451,7 @@ function populateRepeaterMarkers() {
             iconSize: [12, 12],
             iconAnchor: [6, 6],
         });
-        const m = L.marker([info.lat, info.lon], { icon, interactive: true })
+        const m = L.marker([info.lat, info.lon], { icon, interactive: true, pane: "repeaters" })
             .bindTooltip(`<b>${escHtml(info.name || addr)}</b><br><span style="font-family:monospace;font-size:0.7rem">${addr}</span>`, { direction: "top", offset: [0, -8] });
         m.addTo(routeMap);
         rptMarkerMap[addr.toLowerCase()] = m;
@@ -601,7 +607,7 @@ function showRouteOnMap(pkt, group) {
                 html: `<div class="route-star-center" title="${escHtml(sourceName || sourceAddr)}">⭐</div>`,
                 iconSize: [28, 28], iconAnchor: [14, 14],
             });
-            routeMarkers.push(L.marker([srcInfo.lat, srcInfo.lon], { icon: starIcon, interactive: false }).addTo(routeMap));
+            routeMarkers.push(L.marker([srcInfo.lat, srcInfo.lon], { icon: starIcon, interactive: false, pane: "endpoints" }).addTo(routeMap));
         }
         const seenRx = new Set();
         for (let pi = 0; pi < allPaths.length; pi++) {
@@ -620,7 +626,7 @@ function showRouteOnMap(pkt, group) {
                     html: `<div class="route-endpoint route-rx" title="${escHtml(rxName)}" style="border-color:${rxColor}">📥</div>`,
                     iconSize: [20, 20], iconAnchor: [10, 10],
                 });
-                routeMarkers.push(L.marker([rxInfo.lat, rxInfo.lon], { icon: rxIcon, interactive: false }).addTo(routeMap));
+                routeMarkers.push(L.marker([rxInfo.lat, rxInfo.lon], { icon: rxIcon, interactive: false, pane: "endpoints" }).addTo(routeMap));
             }
         }
     } else {
@@ -630,7 +636,7 @@ function showRouteOnMap(pkt, group) {
                 html: `<div class="route-endpoint route-src">📡</div>`,
                 iconSize: [18, 18], iconAnchor: [9, 9],
             });
-            routeMarkers.push(L.marker(coords[0], { icon: srcIcon, interactive: false }).addTo(routeMap));
+            routeMarkers.push(L.marker(coords[0], { icon: srcIcon, interactive: false, pane: "endpoints" }).addTo(routeMap));
         }
         if (coords.length > 1) {
             const dstIcon = L.divIcon({
@@ -638,7 +644,7 @@ function showRouteOnMap(pkt, group) {
                 html: `<div class="route-endpoint route-dst">📥</div>`,
                 iconSize: [18, 18], iconAnchor: [9, 9],
             });
-            routeMarkers.push(L.marker(coords[coords.length - 1], { icon: dstIcon, interactive: false }).addTo(routeMap));
+            routeMarkers.push(L.marker(coords[coords.length - 1], { icon: dstIcon, interactive: false, pane: "endpoints" }).addTo(routeMap));
         }
     }
 
@@ -657,7 +663,7 @@ function showRouteOnMap(pkt, group) {
                 html: `<div class="detail-speech-bubble">${bHtml}</div>`,
                 iconSize: [200, 80], iconAnchor: [100, 84],
             });
-            routeMarkers.push(L.marker([originInfo.lat, originInfo.lon], { icon: bIcon, interactive: false }).addTo(routeMap));
+            routeMarkers.push(L.marker([originInfo.lat, originInfo.lon], { icon: bIcon, interactive: false, pane: "bubbles" }).addTo(routeMap));
         }
     }
 
@@ -698,6 +704,7 @@ function drawHopSegments(seg, hopOffset) {
         const glow = L.polyline(pair, {
             color, weight: 6, opacity: 0.15,
             lineCap: "round", lineJoin: "round", interactive: false,
+            pane: "routeLines",
         }).addTo(routeMap);
         routeMarkers.push(glow);
 
@@ -705,6 +712,7 @@ function drawHopSegments(seg, hopOffset) {
             color, weight: 2.5, opacity: 0.7,
             lineCap: "round", lineJoin: "round",
             dashArray: "8 6", interactive: false,
+            pane: "routeLines",
         }).addTo(routeMap);
         routeMarkers.push(line);
         routePathLayers.push({ polyline: line, glow });
