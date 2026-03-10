@@ -183,6 +183,20 @@
   width: 20px; height: 20px;
 }
 
+/* Triangulation overlay – white lines between start repeaters + centroid */
+.tri-centroid-wrap { background: none !important; border: none !important; z-index: 910 !important; }
+.tri-centroid {
+  width: 10px; height: 10px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(255,255,255,0.9), 0 0 20px rgba(255,255,255,0.4);
+  animation: tri-pulse 2s ease-in-out infinite;
+}
+@keyframes tri-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 10px rgba(255,255,255,0.9); }
+  50% { transform: scale(1.3); box-shadow: 0 0 16px rgba(255,255,255,1), 0 0 30px rgba(255,255,255,0.5); }
+}
+
 /* Star for ADVERT source */
 .route-star-wrap { background: none !important; border: none !important; z-index: 900 !important; }
 .route-star-center {

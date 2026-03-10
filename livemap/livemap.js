@@ -630,21 +630,106 @@ function showRouteOnMap(pkt, group) {
             }
         }
     } else {
-        if (coords.length >= 1) {
-            const srcIcon = L.divIcon({
-                className: "route-endpoint-wrap",
-                html: `<div class="route-endpoint route-src">📡</div>`,
-                iconSize: [18, 18], iconAnchor: [9, 9],
-            });
-            routeMarkers.push(L.marker(coords[0], { icon: srcIcon, interactive: false, pane: "endpoints" }).addTo(routeMap));
+        // Collect unique first/last GPS-resolved hops across ALL paths
+        const srcAddrs = new Map();
+        const dstAddrs = new Map();
+        for (const p of allPaths) {
+            const pH = trimGatewayHops(p.split(",").map(a => a.trim().toLowerCase())).hops;
+            const pSegs = resolveHopSegments(pH);
+            const pAddrs = pSegs.flatMap(s => s.addrs);
+            if (pAddrs.length >= 1) {
+                const a = pAddrs[0];
+                const info = addressBook[a];
+                if (info && info.lat != null && !srcAddrs.has(a)) srcAddrs.set(a, info);
+            }
+            if (pAddrs.length > 1) {
+                const a = pAddrs[pAddrs.length - 1];
+                const info = addressBook[a];
+                if (info && info.lat != null && !dstAddrs.has(a)) dstAddrs.set(a, info);
+            }
         }
-        if (coords.length > 1) {
-            const dstIcon = L.divIcon({
-                className: "route-endpoint-wrap",
-                html: `<div class="route-endpoint route-dst">📥</div>`,
-                iconSize: [18, 18], iconAnchor: [9, 9],
-            });
-            routeMarkers.push(L.marker(coords[coords.length - 1], { icon: dstIcon, interactive: false, pane: "endpoints" }).addTo(routeMap));
+        for (const [addr, info] of srcAddrs) {
+            routeMarkers.push(L.marker([info.lat, info.lon], {
+                icon: L.divIcon({
+                    className: "route-endpoint-wrap",
+                    html: `<div class="route-endpoint route-src" title="${escHtml(info.name || addr)}">📡</div>`,
+                    iconSize: [18, 18], iconAnchor: [9, 9],
+                }),
+                interactive: false, pane: "endpoints",
+            }).addTo(routeMap));
+        }
+        for (const [addr, info] of dstAddrs) {
+            routeMarkers.push(L.marker([info.lat, info.lon], {
+                icon: L.divIcon({
+                    className: "route-endpoint-wrap",
+                    html: `<div class="route-endpoint route-dst" title="${escHtml(info.name || addr)}">📥</div>`,
+                    iconSize: [18, 18], iconAnchor: [9, 9],
+                }),
+                interactive: false, pane: "endpoints",
+            }).addTo(routeMap));
+        }
+    }
+
+    // ── Triangulation: multiple start repeaters ─────────
+    // When the original signal was heard by multiple repeaters,
+    // mark each with 📡, connect with white dashed lines, and
+    // show a white dot at the centroid (triangulated position).
+    {
+        // For ADVERT: source (index 0) already has ⭐ → look at first relay (index 1)
+        // For others: first hop (index 0) = first receiver of the signal
+        const triIdx = isAdvert ? 1 : 0;
+        const triStarts = new Map();
+        for (const p of allPaths) {
+            const pH = trimGatewayHops(p.split(",").map(a => a.trim().toLowerCase())).hops;
+            for (let hi = triIdx; hi < pH.length; hi++) {
+                const info = addressBook[pH[hi]];
+                if (info && info.lat != null && info.lon != null) {
+                    if (!triStarts.has(pH[hi])) {
+                        triStarts.set(pH[hi], { lat: info.lat, lon: info.lon, name: info.name || pH[hi] });
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (triStarts.size >= 2) {
+            const pts = [...triStarts.values()];
+
+            // For ADVERT: place 📡 at each first-relay repeater
+            if (isAdvert) {
+                for (const sp of pts) {
+                    routeMarkers.push(L.marker([sp.lat, sp.lon], {
+                        icon: L.divIcon({
+                            className: "route-endpoint-wrap",
+                            html: `<div class="route-endpoint route-src" title="${escHtml(sp.name)}">📡</div>`,
+                            iconSize: [18, 18], iconAnchor: [9, 9],
+                        }),
+                        interactive: false, pane: "endpoints",
+                    }).addTo(routeMap));
+                }
+            }
+
+            // White dashed lines between start repeaters
+            for (let i = 0; i < pts.length; i++) {
+                for (let j = i + 1; j < pts.length; j++) {
+                    routeMarkers.push(L.polyline(
+                        [[pts[i].lat, pts[i].lon], [pts[j].lat, pts[j].lon]],
+                        { color: '#ffffff', weight: 2, opacity: 0.7, dashArray: '6 4', lineCap: 'round', interactive: false, pane: 'endpoints' }
+                    ).addTo(routeMap));
+                }
+            }
+
+            // White dot at centroid (triangulated position)
+            const cLat = pts.reduce((s, p) => s + p.lat, 0) / pts.length;
+            const cLon = pts.reduce((s, p) => s + p.lon, 0) / pts.length;
+            routeMarkers.push(L.marker([cLat, cLon], {
+                icon: L.divIcon({
+                    className: "tri-centroid-wrap",
+                    html: `<div class="tri-centroid"></div>`,
+                    iconSize: [14, 14], iconAnchor: [7, 7],
+                }),
+                interactive: false, pane: "endpoints",
+            }).addTo(routeMap));
         }
     }
 
