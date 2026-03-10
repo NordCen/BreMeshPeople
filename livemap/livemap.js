@@ -518,11 +518,11 @@ function resolveHopSegments(hops) {
             cur.coords.push([info.lat, info.lon]);
             cur.addrs.push(hops[i]);
         } else {
-            if (cur.coords.length >= 2) segments.push(cur);
+            if (cur.coords.length >= 3) segments.push(cur);
             cur = { coords: [], addrs: [] };
         }
     }
-    if (cur.coords.length >= 2) segments.push(cur);
+    if (cur.coords.length >= 3) segments.push(cur);
     return segments;
 }
 
