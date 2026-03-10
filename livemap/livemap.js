@@ -88,6 +88,8 @@ function isEncryptedDM(text) {
 }
 
 // ── Address Book ────────────────────────────────────────
+// addrCandidates: addr → [entry, ...] (all repeaters sharing that 1-byte addr)
+let addrCandidates = {};
 function addrName(a) { return a ? (addressBook[a.toLowerCase()]?.name || "") : ""; }
 function addrLabel(a) { const n = addrName(a); return n ? `${a} (${n})` : a; }
 
@@ -95,11 +97,36 @@ async function loadAddressBook() {
     try {
         const data = await api("address-book");
         addressBook = {};
+        addrCandidates = {};
         for (const e of data.addresses) {
             const a = e.addr.toLowerCase();
+            if (!addrCandidates[a]) addrCandidates[a] = [];
+            if (e.lat != null && e.lon != null) addrCandidates[a].push(e);
             if (!addressBook[a] || e.name) addressBook[a] = e;
         }
     } catch (e) { console.error("AddressBook:", e); }
+}
+
+// Pick the best candidate for an address given neighbor coordinates.
+// If only one candidate has coords, return it. If multiple, pick the
+// one closest to the average of the supplied neighbor positions.
+function resolveAddrByProximity(addr, neighborCoords) {
+    const cands = addrCandidates[addr];
+    if (!cands || cands.length === 0) return addressBook[addr] || null;
+    if (cands.length === 1) return cands[0];
+    if (!neighborCoords || neighborCoords.length === 0) return addressBook[addr] || cands[0];
+    // Compute centroid of neighbors
+    let sLat = 0, sLon = 0;
+    for (const [lat, lon] of neighborCoords) { sLat += lat; sLon += lon; }
+    const cLat = sLat / neighborCoords.length;
+    const cLon = sLon / neighborCoords.length;
+    // Pick candidate closest to centroid
+    let best = cands[0], bestDist = Infinity;
+    for (const c of cands) {
+        const d = (c.lat - cLat) ** 2 + (c.lon - cLon) ** 2;
+        if (d < bestDist) { bestDist = d; best = c; }
+    }
+    return best;
 }
 
 // ── Type class helper ───────────────────────────────────
@@ -458,13 +485,38 @@ function populateRepeaterMarkers() {
 }
 
 function resolveHopSegments(hops) {
+    // Two-pass resolution: first resolve unambiguous hops, then resolve
+    // collisions using neighbor proximity.
+    const resolved = new Array(hops.length).fill(null);
+
+    // Pass 1: resolve hops that have only one candidate
+    for (let i = 0; i < hops.length; i++) {
+        const cands = addrCandidates[hops[i]];
+        if (cands && cands.length === 1) {
+            resolved[i] = cands[0];
+        } else if (!cands || cands.length === 0) {
+            const info = addressBook[hops[i]];
+            if (info && info.lat != null && info.lon != null) resolved[i] = info;
+        }
+    }
+
+    // Pass 2: resolve ambiguous hops using neighbor coords
+    for (let i = 0; i < hops.length; i++) {
+        if (resolved[i]) continue;
+        const neighbors = [];
+        if (i > 0 && resolved[i - 1]) neighbors.push([resolved[i - 1].lat, resolved[i - 1].lon]);
+        if (i < hops.length - 1 && resolved[i + 1]) neighbors.push([resolved[i + 1].lat, resolved[i + 1].lon]);
+        resolved[i] = resolveAddrByProximity(hops[i], neighbors);
+    }
+
+    // Build segments from resolved entries
     const segments = [];
     let cur = { coords: [], addrs: [] };
-    for (const addr of hops) {
-        const info = addressBook[addr];
+    for (let i = 0; i < hops.length; i++) {
+        const info = resolved[i];
         if (info && info.lat != null && info.lon != null) {
             cur.coords.push([info.lat, info.lon]);
-            cur.addrs.push(addr);
+            cur.addrs.push(hops[i]);
         } else {
             if (cur.coords.length >= 2) segments.push(cur);
             cur = { coords: [], addrs: [] };
@@ -628,16 +680,16 @@ function showRouteOnMap(pkt, group) {
         for (const p of allPaths) {
             const pH = p.split(",").map(a => a.trim().toLowerCase());
             const pSegs = resolveHopSegments(pH);
+            const pCoords = pSegs.flatMap(s => s.coords);
             const pAddrs = pSegs.flatMap(s => s.addrs);
-            if (pAddrs.length >= 1) {
+            if (pAddrs.length >= 1 && pCoords.length >= 1) {
                 const a = pAddrs[0];
-                const info = addressBook[a];
-                if (info && info.lat != null && !srcAddrs.has(a)) srcAddrs.set(a, info);
+                if (!srcAddrs.has(a)) srcAddrs.set(a, { name: addrName(a), lat: pCoords[0][0], lon: pCoords[0][1] });
             }
-            if (pAddrs.length > 1) {
+            if (pAddrs.length > 1 && pCoords.length > 1) {
                 const a = pAddrs[pAddrs.length - 1];
-                const info = addressBook[a];
-                if (info && info.lat != null && !dstAddrs.has(a)) dstAddrs.set(a, info);
+                const last = pCoords[pCoords.length - 1];
+                if (!dstAddrs.has(a)) dstAddrs.set(a, { name: addrName(a), lat: last[0], lon: last[1] });
             }
         }
         for (const [addr, info] of srcAddrs) {
@@ -668,17 +720,19 @@ function showRouteOnMap(pkt, group) {
     // show a white dot at the centroid (triangulated position).
     // ADVERT packets always have a known origin → skip triangulation.
     if (!isAdvert) {
-        const triIdx = 0;
         const triStarts = new Map();
         for (const p of allPaths) {
             const pH = p.split(",").map(a => a.trim().toLowerCase());
-            for (let hi = triIdx; hi < pH.length; hi++) {
-                const info = addressBook[pH[hi]];
-                if (info && info.lat != null && info.lon != null) {
-                    if (!triStarts.has(pH[hi])) {
-                        triStarts.set(pH[hi], { lat: info.lat, lon: info.lon, name: info.name || pH[hi] });
-                    }
-                    break;
+            const pSegs = resolveHopSegments(pH);
+            // Use the first resolved hop as the triangulation start
+            if (pSegs.length > 0 && pSegs[0].coords.length > 0) {
+                const firstAddr = pSegs[0].addrs[0];
+                if (!triStarts.has(firstAddr)) {
+                    triStarts.set(firstAddr, {
+                        lat: pSegs[0].coords[0][0],
+                        lon: pSegs[0].coords[0][1],
+                        name: addrName(firstAddr) || firstAddr,
+                    });
                 }
             }
         }
@@ -725,9 +779,11 @@ function showRouteOnMap(pkt, group) {
     // ── Speech bubble for public GRP_TXT ────────────────
     const _pd = pkt.decoded && pkt.decoded.payload_details;
     if (_pd && _pd.type === "GRP_TXT" && _pd.decrypted === true && _pd.text) {
-        const originAddr = hops[0] || sourceAddr;
-        const originInfo = originAddr ? addressBook[originAddr] : null;
-        if (originInfo && originInfo.lat != null && originInfo.lon != null) {
+        // Use the first resolved coordinate from segments (collision-safe)
+        const firstSeg = segments.length > 0 ? segments[0] : null;
+        const bubbleLat = firstSeg && firstSeg.coords.length > 0 ? firstSeg.coords[0][0] : null;
+        const bubbleLon = firstSeg && firstSeg.coords.length > 0 ? firstSeg.coords[0][1] : null;
+        if (bubbleLat != null && bubbleLon != null) {
             let bHtml = "";
             if (_pd.sender) bHtml += `<div class="detail-speech-sender">${escHtml(_pd.sender)}</div>`;
             bHtml += `<div class="detail-speech-text">${escHtml(_pd.text)}</div>`;
@@ -737,7 +793,7 @@ function showRouteOnMap(pkt, group) {
                 html: `<div class="detail-speech-bubble">${bHtml}</div>`,
                 iconSize: [180, 70], iconAnchor: [-12, 70],
             });
-            routeMarkers.push(L.marker([originInfo.lat, originInfo.lon], { icon: bIcon, interactive: false, pane: "bubbles" }).addTo(routeMap));
+            routeMarkers.push(L.marker([bubbleLat, bubbleLon], { icon: bIcon, interactive: false, pane: "bubbles" }).addTo(routeMap));
         }
     }
 
