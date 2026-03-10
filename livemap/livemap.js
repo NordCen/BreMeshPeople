@@ -674,10 +674,9 @@ function showRouteOnMap(pkt, group) {
     // When the original signal was heard by multiple repeaters,
     // mark each with 📡, connect with white dashed lines, and
     // show a white dot at the centroid (triangulated position).
-    {
-        // For ADVERT: source (index 0) already has ⭐ → look at first relay (index 1)
-        // For others: first hop (index 0) = first receiver of the signal
-        const triIdx = isAdvert ? 1 : 0;
+    // ADVERT packets always have a known origin → skip triangulation.
+    if (!isAdvert) {
+        const triIdx = 0;
         const triStarts = new Map();
         for (const p of allPaths) {
             const pH = trimGatewayHops(p.split(",").map(a => a.trim().toLowerCase())).hops;
@@ -695,18 +694,16 @@ function showRouteOnMap(pkt, group) {
         if (triStarts.size >= 2) {
             const pts = [...triStarts.values()];
 
-            // For ADVERT: place 📡 at each first-relay repeater
-            if (isAdvert) {
-                for (const sp of pts) {
-                    routeMarkers.push(L.marker([sp.lat, sp.lon], {
-                        icon: L.divIcon({
-                            className: "route-endpoint-wrap",
-                            html: `<div class="route-endpoint route-src" title="${escHtml(sp.name)}">📡</div>`,
-                            iconSize: [18, 18], iconAnchor: [9, 9],
-                        }),
-                        interactive: false, pane: "endpoints",
-                    }).addTo(routeMap));
-                }
+            // 📡 at each start repeater
+            for (const sp of pts) {
+                routeMarkers.push(L.marker([sp.lat, sp.lon], {
+                    icon: L.divIcon({
+                        className: "route-endpoint-wrap",
+                        html: `<div class="route-endpoint route-src" title="${escHtml(sp.name)}">📡</div>`,
+                        iconSize: [18, 18], iconAnchor: [9, 9],
+                    }),
+                    interactive: false, pane: "endpoints",
+                }).addTo(routeMap));
             }
 
             // White dashed lines between start repeaters
