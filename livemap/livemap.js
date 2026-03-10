@@ -480,6 +480,19 @@ function showRouteOnMap(pkt, group) {
     const sourceAddr = (pkt.source_addr || (group && group.source_addr) || "").toLowerCase();
     const sourceName = pkt.name || (group && group.source_name) || "";
 
+    // For ADVERTs: inject decoded lat/lon into address book so the source
+    // hop resolves correctly even when addresses collide (1-byte addr).
+    const pd = pkt.decoded?.payload_details;
+    if (isAdvert && sourceAddr && pd && pd.lat != null && pd.lon != null) {
+        addressBook[sourceAddr] = {
+            ...(addressBook[sourceAddr] || {}),
+            addr: sourceAddr,
+            name: pd.name || sourceName || (addressBook[sourceAddr]?.name) || sourceAddr,
+            lat: pd.lat,
+            lon: pd.lon,
+        };
+    }
+
     const hopsStr = isAdvert ? prependSourceToPath(pkt.hops, pkt, group) : (pkt.hops || "");
     let hops = hopsStr ? hopsStr.split(",").map(a => a.trim().toLowerCase()) : [];
     if (hops.length < 3) return;
