@@ -11,7 +11,7 @@ permalink: /moin/
 Ein Companion ist dein persönliches Gerät, über das du Nachrichten senden und empfangen kannst – entweder per Bluetooth mit der MeshCore App oder per USB.
 
 1. **Companion-Firmware flashen**
-   Web-Flasher: [https://flasher.meshcore.co.uk/](https://flasher.meshcore.co.uk/) → Firmware-Typ **Companion** wählen
+   Web-Flasher: [https://meshcore.io/flasher](https://meshcore.io/flasher) → Firmware-Typ **Companion** wählen
 
 2. **Region & Preset einstellen**
    EU/UK (NARROW)
@@ -38,7 +38,7 @@ Ein Companion ist dein persönliches Gerät, über das du Nachrichten senden und
 Ein Repeater leitet Nachrichten anderer Knoten weiter und erweitert so die Reichweite des Netzes. Repeater brauchen keine App – sie arbeiten autonom.
 
 1. **Repeater-Firmware flashen**
-   Web-Flasher: [https://flasher.meshcore.co.uk/](https://flasher.meshcore.co.uk/) → Firmware-Typ **Repeater** wählen
+   Web-Flasher: [https://meshcore.io/flasher](https://meshcore.io/flasher) → Firmware-Typ **Repeater** wählen
 
 2. **Region & Preset einstellen**
    EU/UK (NARROW)
