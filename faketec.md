@@ -167,7 +167,7 @@ Das FakeTec basiert auf dem nRF52840 – dafür funktioniert das OTA-Update via 
    - [iOS (App Store)](https://apps.apple.com/app/nrf-device-firmware-update/id1624454660)
 
 2. **Firmware herunterladen**  
-   Auf [flasher.meshcore.co.uk](https://flasher.meshcore.co.uk/) die **ZIP-Version** der Firmware für dein Gerät herunterladen (z. B. `promicro_diy_tcxo_companion_radio_ble-vX.X.X.zip`)
+   Auf [meshcore.io/flasher](https://meshcore.io/flasher) die **ZIP-Version** der Firmware für dein Gerät herunterladen (z. B. `promicro_diy_tcxo_companion_radio_ble-vX.X.X.zip`)
 
 3. **OTA-Modus starten**  
    - Verbinde dich über die MeshCore-App mit dem Repeater (Admin-Login)
