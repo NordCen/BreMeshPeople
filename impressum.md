@@ -4,31 +4,28 @@ title: Impressum
 permalink: /impressum/
 ---
 
-# Impressum
+# Impressum / Legal Notice
 
-## Angaben gemäß § 5 TMG
+## Hinweis zur Impressumspflicht
 
-Max Mustermann
-Musterstraße 1
-12345 Musterstadt
-Deutschland
+Diese Website wird rein privat betrieben und dient ausschließlich persönlichen bzw. familiären Zwecken und/oder der redaktionellen Meinungsäußerung ohne jeglichen geschäftlichen oder kommerziellen Hintergrund.
+
+Da dieses Angebot **ausschließlich privaten und persönlichen Zwecken** dient und **kein journalistisch-redaktionell gestaltetes Angebot** nach **§ 18 Abs. 2 MStV** vorliegt, besteht nach deutscher Rechtslage **keine Pflicht zur Angabe eines vollständigen Impressums** mit vollständiger Ladefähiger Anschrift.
+
+---
 
 ## Kontakt
 
-E-Mail: beispiel@example.com
+Sollten Sie Fragen oder Anmerkungen zu den Inhalten dieser Seite haben, können Sie wie folgt kontakt aufnehmen:
 
-## Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV
+**Kontakt-Link / GitHub:** [https://github.com/NordCen/BreMeshPeople/issues](https://github.com/NordCen/BreMeshPeople/issues)
 
-Max Mustermann
-Musterstraße 1
-12345 Musterstadt
+---
 
-## Haftungsausschluss
+## Haftungsausschluss (Disclaimer)
 
 ### Haftung für Inhalte
-
-Die Inhalte dieser Seiten wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen.
+Als Diensteanbieter bin ich für eigene Inhalte auf diesen Seiten nach den allgemeinen Gesetzen verantwortlich. Ich bin jedoch nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen.
 
 ### Haftung für Links
-
-Unser Angebot enthält Links zu externen Webseiten Dritter, auf deren Inhalte wir keinen Einfluss haben. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter verantwortlich.
+Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.
