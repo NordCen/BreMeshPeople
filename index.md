@@ -57,7 +57,7 @@ Das Bremer Mesh lebt vom Austausch:
   - [#bremesh:hbme.sh](https://matrix.to/#/%23bremesh:hbme.sh)
 - Telegram-Gruppen: 
   - [MeshCore Deutschland](https://t.me/meshcorede)
-  - [Meshtastic Bremen und Umzu](https://t.me/meshhbuz)
+  - [Mesh Bremen und Umzu](https://t.me/meshhbuz)
 
 
 </div>
