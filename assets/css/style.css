@@ -1,11 +1,12 @@
 :root {
-  /* Farben für den Darkmode */
-  --bg: #121212;
-  --surface: #1e1e1e;
-  --surface-hover: #2a2a2a;
-  --text: #e0e0e0;
-  --muted: #a0a0a0;
-  --line: #2d2d2d;
+  /* Darkmode in kühlen Blautönen */
+  --bg: #0b0f19;            /* Sehr dunkles Blau-Schwarz als Haupt-Hintergrund */
+  --surface: #111827;       /* Dunkles Navy-Blau für Karten/Kästen */
+  --surface-hover: #1f2937; /* Etwas helleres Blau für Hover-Effekte */
+  --text: #f3f4f6;          /* Klares Off-White mit leichtem Blau-Stich */
+  --muted: #9ca3af;         /* Gedämpftes Blau-Grau für Nebentexte */
+  --line: #1e293b;          /* Schickes Slate-Blau für Trennlinien */
+  --accent: #38bdf8;        /* Softes Cyan/Hellblau für Links/Highlights */
   --max: 820px;
 }
 
@@ -17,7 +18,11 @@ body {
   background: var(--bg);
 }
 
-a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+a { 
+  color: var(--accent); 
+  text-decoration: underline; 
+  text-underline-offset: 2px; 
+}
 a:hover { opacity: .85; }
 
 .site-header {
@@ -43,6 +48,7 @@ a:hover { opacity: .85; }
   align-items: center;
   gap: 10px;
   text-decoration: none;
+  color: var(--text);
 }
 
 .brand-text {
@@ -61,22 +67,25 @@ a:hover { opacity: .85; }
   gap: 14px;
 }
 .nav a {
+  color: var(--text);
   text-decoration: none;
   padding: 6px 8px;
   border-radius: 8px;
 }
 .nav a:hover {
   background: var(--surface-hover);
+  color: var(--accent);
 }
 .nav a.active {
   font-weight: 600;
+  color: var(--accent);
   text-decoration: underline;
 }
 
 .hero {
   border-bottom: 1px solid var(--line);
   background:
-    linear-gradient(0deg, rgba(18, 18, 18, 0.6), rgba(18, 18, 18, 0.6)),
+    linear-gradient(0deg, rgba(11, 15, 25, 0.75), rgba(11, 15, 25, 0.75)),
     url("/assets/img/hero.png");
   background-size: cover;
   background-position: center;
@@ -98,7 +107,8 @@ a:hover { opacity: .85; }
   font-family: Georgia, "Times New Roman", Times, serif;
   font-size: clamp(28px, 4vw, 44px);
   line-height: 1.15;
-  background: rgba(30, 30, 30, 0.9);
+  background: rgba(17, 24, 39, 0.9);
+  border: 1px solid var(--line);
   padding: 10px 14px;
   border-radius: 10px;
 }
@@ -112,6 +122,7 @@ a:hover { opacity: .85; }
 h1, h2, h3 {
   font-family: Georgia, "Times New Roman", Times, serif;
   line-height: 1.15;
+  color: #fff;
 }
 h1 { font-size: clamp(34px, 4vw, 54px); margin: 0 0 20px; text-align: center; }
 h2 { font-size: 30px; margin: 36px 0 10px; }
@@ -168,7 +179,7 @@ hr {
   gap: 10px;
 }
 .footer-inner a { color: var(--muted); text-decoration: none; }
-.footer-inner a:hover { text-decoration: underline; }
+.footer-inner a:hover { color: var(--accent); text-decoration: underline; }
 .sep { opacity: .6; }
 
 /* News / Posts */
