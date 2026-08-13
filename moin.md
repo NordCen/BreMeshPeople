@@ -14,7 +14,7 @@ Ein Companion ist dein persönliches Gerät, über das du Nachrichten senden und
    Web-Flasher: [https://meshcore.io/flasher](https://meshcore.io/flasher) → Firmware-Typ **Companion** wählen
 
 2. **Region & Preset einstellen**
-   EU/UK (NARROW)
+   Regionen sind bei uns bremesh, de-hb und de-ni; das Preset ist EU/UK (NARROW)
 
 3. **App installieren & verbinden**
    MeshCore App ([Android](https://play.google.com/store/apps/details?id=com.liamcottle.meshcore.android)) installieren und per Bluetooth mit dem Companion verbinden
@@ -47,7 +47,11 @@ Ein Repeater leitet Nachrichten anderer Knoten weiter und erweitert so die Reich
    Damit unsere Pakete lokal bleiben und andere Netze nicht belasten, bitte die Region `bremesh` einstellen – per App (als Admin auf dem Repeater eingeloggt) oder per CLI:
    ```
    region put bremesh *
+   region put de-hb *
+   region put de-ni *
    region allowf bremesh
+   region allowf de-hb
+   region allowf de-ni
    region home bremesh
    region save
    ```
