@@ -8,9 +8,9 @@ permalink: /impressum/
 
 ## Hinweis zur Impressumspflicht
 
-Diese Website wird rein privat betrieben und dient ausschließlich persönlichen bzw. familiären Zwecken und/oder der redaktionellen Meinungsäußerung ohne jeglichen geschäftlichen oder kommerziellen Hintergrund.
+Diese Website wird rein privat betrieben und dient ausschließlich persönlichen bzw. familiären Zwecken und/oder der Meinungsäußerung ohne jeglichen geschäftlichen oder kommerziellen Hintergrund.
 
-Da dieses Angebot **ausschließlich privaten und persönlichen Zwecken** dient und **kein journalistisch-redaktionell gestaltetes Angebot** nach **§ 18 Abs. 2 MStV** vorliegt, besteht nach deutscher Rechtslage **keine Pflicht zur Angabe eines vollständigen Impressums** mit vollständiger Ladefähiger Anschrift.
+Da dieses Angebot **ausschließlich privaten und persönlichen Zwecken** dient, besteht nach deutscher Rechtslage **keine Pflicht zur Angabe eines vollständigen Impressums** mit vollständiger Ladefähiger Anschrift.
 
 ---
 
