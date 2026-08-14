@@ -47,12 +47,18 @@ Ein Repeater leitet Nachrichten anderer Knoten weiter und erweitert so die Reich
    Damit unsere Pakete lokal bleiben und andere Netze nicht belasten, bitte die Region `bremesh` einstellen – per App (als Admin auf dem Repeater eingeloggt) oder per CLI:
    ```
    region put bremesh *
-   region put de-hb *
-   region put de-ni *
    region allowf bremesh
+
+   region put de-hb *
    region allowf de-hb
+
+   region put de-ni *
    region allowf de-ni
+
    region home bremesh
+   region default bremesh
+   region denyf *
+
    region save
    ```
    → Mehr Details im [News-Beitrag](/2026/03/07/region-bremesh/)
