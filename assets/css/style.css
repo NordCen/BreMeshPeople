@@ -14,7 +14,7 @@
 html, body { margin: 0; padding: 0; }
 body {
   color: var(--text);
-  font: 16px/1.6 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font: 16px/1.6 'Quicksand',system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   background: var(--bg);
 }
 
@@ -193,4 +193,21 @@ hr {
 @media (max-width: 860px) {
   .columns { grid-template-columns: 1fr; }
   .header-inner { flex-direction: column; align-items: flex-start; }
+}
+
+/* quicksand-regular - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/quicksand-v37-latin-regular.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* quicksand-700 - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: 700;
+  src: url('../fonts/quicksand-v37-latin-700.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
