@@ -4,7 +4,7 @@ title: Impressum
 permalink: /impressum/
 ---
 
-# Impressum / Legal Notice
+# Impressum
 
 ## Hinweis zur Impressumspflicht
 

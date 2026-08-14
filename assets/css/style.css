@@ -104,7 +104,7 @@ a:hover { opacity: .85; }
   }
 }
 .hero-title {
-  font-family: Georgia, "Times New Roman", Times, serif;
+  font-family:'Quicksand', Georgia, "Times New Roman", Times, serif;
   font-size: clamp(28px, 4vw, 44px);
   line-height: 1.15;
   background: rgba(17, 24, 39, 0.9);
@@ -120,7 +120,7 @@ a:hover { opacity: .85; }
 }
 
 h1, h2, h3 {
-  font-family: Georgia, "Times New Roman", Times, serif;
+  font-family:'Quicksand', Georgia, "Times New Roman", Times, serif;
   line-height: 1.15;
   color: #fff;
 }
@@ -146,7 +146,7 @@ hr {
   margin-top: 46px;
 }
 .columns h3 {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Quicksand', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   font-size: 16px;
   letter-spacing: .3px;
   font-weight: 700;
